@@ -1,0 +1,25 @@
+.date-picker-style > .text-field {
+    -fx-background-radius: 8;
+    -fx-border-radius: 8;
+    -fx-border-color: #dcdcdc;
+    -fx-border-width: 1px;
+    -fx-padding: 0 15;
+}
+
+.date-picker-style > .text-field:focused {
+    -fx-border-color: #1976D2;
+    -fx-border-width: 2px;
+}
+
+.date-picker-style .arrow-button {
+    -fx-background-radius: 0 8 8 0;
+    -fx-border-radius: 0 8 8 0;
+}
+
+.button {
+    -fx-cursor: hand;
+}
+
+.hyperlink {
+    -fx-cursor: hand;
+}

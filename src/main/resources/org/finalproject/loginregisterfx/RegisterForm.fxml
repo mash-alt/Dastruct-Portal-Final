@@ -1,0 +1,150 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Hyperlink?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.PasswordField?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.text.Font?>
+<?import javafx.scene.text.Text?>
+
+<AnchorPane prefHeight="650.0" prefWidth="720.0" style="-fx-background-color: #f5f7fa;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.RegisterController">
+   <children>
+      <AnchorPane layoutX="60.0" layoutY="30.0" prefHeight="590.0" prefWidth="600.0" style="-fx-background-color: #FFFFFF; -fx-background-radius: 15; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 4);">
+         <children>
+            <Label alignment="CENTER" layoutX="0.0" layoutY="30.0" prefHeight="40.0" prefWidth="600.0" text="Create New Account" textAlignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="26.0" />
+               </font>
+            </Label>
+            <Label alignment="CENTER" layoutX="0.0" layoutY="70.0" prefHeight="25.0" prefWidth="600.0" text="Please provide your details to register" textFill="#666666">
+               <font>
+                  <Font size="14.0" />
+               </font>
+            </Label>
+
+            <!-- Left column -->
+            <Label layoutX="70.0" layoutY="120.0" text="Full name">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <TextField fx:id="fullNameField" layoutX="70.0" layoutY="140.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your full name" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </TextField>
+
+            <Label layoutX="70.0" layoutY="195.0" text="Course">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <TextField fx:id="courseField" layoutX="70.0" layoutY="215.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your course" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </TextField>
+
+            <Label layoutX="70.0" layoutY="270.0" text="Address">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <TextField fx:id="addressField" layoutX="70.0" layoutY="290.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your address" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </TextField>
+
+            <Label layoutX="77.0" layoutY="419.0" text="Role">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <ComboBox fx:id="roleComboBox" layoutX="70.0" layoutY="438.0" prefHeight="40.0" prefWidth="220.0" promptText="Select your role" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15; -fx-cursor: hand;">
+            </ComboBox>
+
+            <!-- Right column -->
+            <Label layoutX="74.0" layoutY="345.0" text="Birthday">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <DatePicker fx:id="birthdayPicker" layoutX="70.0" layoutY="365.0" prefHeight="40.0" prefWidth="220.0" promptText="Select your birthday" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 5; -fx-cursor: hand;">
+            </DatePicker>
+
+            <Label layoutX="310.0" layoutY="120.0" text="Phone number">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <TextField fx:id="phoneField" layoutX="310.0" layoutY="140.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your phone number" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </TextField>
+
+            <Label layoutX="310.0" layoutY="195.0" text="Email">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <TextField fx:id="emailField" layoutX="310.0" layoutY="215.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your email address" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </TextField>
+
+            <Label layoutX="314.0" layoutY="270.0" text="Password">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <PasswordField fx:id="passwordField" layoutX="310.0" layoutY="290.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your password" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </PasswordField>
+
+            <Label layoutX="310.0" layoutY="345.0" text="Confirm password">
+               <font>
+                  <Font name="System Bold" size="13.0" />
+               </font>
+            </Label>
+            <PasswordField fx:id="confirmPasswordField" layoutX="310.0" layoutY="365.0" prefHeight="40.0" prefWidth="220.0" promptText="Confirm your password" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+               <font>
+                  <Font size="13.0" />
+               </font>
+            </PasswordField>
+
+            <!-- Register Button -->
+            <Button fx:id="registerButton" layoutX="175.0" layoutY="497.0" mnemonicParsing="false" onAction="#onRegisterButtonClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #2563eb; -fx-background-radius: 25; -fx-text-fill: white; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.25), 8, 0, 0, 4);" text="Create Account">
+               <font>
+                  <Font name="System Bold" size="14.0" />
+               </font>
+            </Button>
+
+            <!-- Login Link -->
+            <HBox alignment="CENTER" layoutY="545.0" prefHeight="30.0" prefWidth="600.0" spacing="5.0">
+               <children>
+                  <Text strokeType="OUTSIDE" strokeWidth="0.0" text="Already have an account?">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </Text>
+                  <Hyperlink fx:id="loginLink" onAction="#onLoginLinkClick" style="-fx-text-fill: #2563eb; -fx-border-color: transparent; -fx-cursor: hand;" text="Login">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Hyperlink>
+               </children>
+            </HBox>
+         </children>
+      </AnchorPane>
+   </children>
+</AnchorPane>
