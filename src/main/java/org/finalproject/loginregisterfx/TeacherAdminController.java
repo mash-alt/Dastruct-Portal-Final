@@ -9,9 +9,16 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.finalproject.loginregisterfx.Service.AuthService;
+import javafx.scene.control.ListView;
+import javafx.scene.control.SelectionMode;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 
 import java.io.IOException;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.ResourceBundle;
@@ -45,10 +52,17 @@ public class TeacherAdminController implements Initializable {
     @FXML
     private Hyperlink loginLink;
 
+    @FXML
+    private ListView<String> subjectsListView;
+
     private String role;
 
     @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
+        if (subjectsListView != null) {
+            subjectsListView.getSelectionModel().setSelectionMode(SelectionMode.MULTIPLE);
+            fetchSubjectsForListView();
+        }
     }
 
     public void setRole(String role) {
@@ -72,6 +86,9 @@ public class TeacherAdminController implements Initializable {
             userData.put("email", emailField.getText());
             userData.put("phone", phoneField.getText());
             userData.put("password", passwordField.getText());
+
+            ObservableList<String> selectedSubjects = subjectsListView.getSelectionModel().getSelectedItems();
+            userData.put("subjects", new ArrayList<>(selectedSubjects));
 
             // Call the API
             AuthService.register(userData, role.toLowerCase())
@@ -165,5 +182,18 @@ public class TeacherAdminController implements Initializable {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }
+
+    private void fetchSubjectsForListView() {
+        AuthService.makeGetRequest("/admin/subjects").thenAccept(response -> {
+            ObservableList<String> subjectNames = FXCollections.observableArrayList();
+            JsonArray subjects = response.getAsJsonArray("subjects");
+            for (int i = 0; i < subjects.size(); i++) {
+                JsonObject subj = subjects.get(i).getAsJsonObject();
+                String name = subj.get("subjectName").getAsString();
+                subjectNames.add(name);
+            }
+            javafx.application.Platform.runLater(() -> subjectsListView.setItems(subjectNames));
+        });
     }
 }

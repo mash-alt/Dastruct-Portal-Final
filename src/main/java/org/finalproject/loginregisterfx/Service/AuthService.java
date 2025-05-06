@@ -40,7 +40,7 @@ public class AuthService {
         return makePostRequest("/auth/logout", null);
     }
 
-    private static CompletableFuture<JsonObject> makePostRequest(String endpoint, Object requestBody) {
+    public static CompletableFuture<JsonObject> makePostRequest(String endpoint, Object requestBody) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
 
         try {
@@ -85,7 +85,7 @@ public class AuthService {
         return future;
     }
 
-    private static CompletableFuture<JsonObject> makeGetRequest(String endpoint) {
+    public static CompletableFuture<JsonObject> makeGetRequest(String endpoint) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
 
         try {
@@ -118,6 +118,79 @@ public class AuthService {
             future.completeExceptionally(e);
         }
 
+        return future;
+    }
+
+    // Add PUT request support
+    public static CompletableFuture<JsonObject> makePutRequest(String endpoint, Object requestBody) {
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        try {
+            String jsonBody = requestBody != null ? gson.toJson(requestBody) : "";
+            RequestBody body = RequestBody.create(jsonBody, JSON);
+
+            Request.Builder requestBuilder = new Request.Builder()
+                    .url(BASE_URL + endpoint)
+                    .put(body);
+
+            if (authToken != null && !authToken.isEmpty()) {
+                requestBuilder.addHeader("Authorization", "Bearer " + authToken);
+            }
+
+            client.newCall(requestBuilder.build()).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    future.completeExceptionally(e);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String responseBody = response.body().string();
+                    if (response.isSuccessful()) {
+                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+                        future.complete(jsonResponse);
+                    } else {
+                        future.completeExceptionally(new IOException("Request failed: " + responseBody));
+                    }
+                }
+            });
+        } catch (Exception e) {
+            future.completeExceptionally(e);
+        }
+        return future;
+    }
+
+    // Add DELETE request support
+    public static CompletableFuture<JsonObject> makeDeleteRequest(String endpoint) {
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        try {
+            Request.Builder requestBuilder = new Request.Builder()
+                    .url(BASE_URL + endpoint)
+                    .delete();
+
+            if (authToken != null && !authToken.isEmpty()) {
+                requestBuilder.addHeader("Authorization", "Bearer " + authToken);
+            }
+
+            client.newCall(requestBuilder.build()).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    future.completeExceptionally(e);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String responseBody = response.body().string();
+                    if (response.isSuccessful()) {
+                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+                        future.complete(jsonResponse);
+                    } else {
+                        future.completeExceptionally(new IOException("Request failed: " + responseBody));
+                    }
+                }
+            });
+        } catch (Exception e) {
+            future.completeExceptionally(e);
+        }
         return future;
     }
 }

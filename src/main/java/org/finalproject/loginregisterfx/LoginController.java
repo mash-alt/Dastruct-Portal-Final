@@ -95,6 +95,20 @@ public class LoginController {
                         }
                         showAlert(Alert.AlertType.INFORMATION, "Login Successful",
                                 "Welcome back, " + name + "!");
+                        if ("Admin".equalsIgnoreCase(role)) {
+                            try {
+                                Parent adminView = FXMLLoader.load(getClass().getResource("Admin.fxml"));
+                                Stage currentStage = (Stage) loginButton.getScene().getWindow();
+                                currentStage.setScene(new Scene(adminView, 1000, 700));
+                                currentStage.setTitle("Admin Dashboard");
+                                currentStage.setResizable(false);
+                                currentStage.show();
+                                currentStage.centerOnScreen();
+                            } catch (Exception e) {
+                                showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not open admin dashboard.");
+                                e.printStackTrace();
+                            }
+                        }
                         // TODO: Navigate to appropriate dashboard based on role
                     });
                 })
