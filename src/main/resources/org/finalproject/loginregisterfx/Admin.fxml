@@ -1,0 +1,305 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.*?>
+<?import javafx.scene.layout.*?>
+<?import javafx.scene.text.Font?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.image.Image?>
+<?import javafx.scene.effect.DropShadow?>
+<?import javafx.scene.shape.Circle?>
+<?import java.net.URL?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #f0f4f8;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.AdminController">
+   <children>
+      <!-- Side Navigation Panel with a Different Dark Gradient -->
+      <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="220.0" style="-fx-background-color: linear-gradient(to bottom, #36404a, #292e49); -fx-background-radius: 0 20 20 0;">
+         <children>
+            <!-- App Branding -->
+            <HBox alignment="CENTER" prefHeight="90.0" prefWidth="220.0" spacing="10">
+               <children>
+                  <Circle radius="20" fill="WHITE" />
+                  <Label alignment="CENTER" text="Admin Portal" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="22.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+
+            <!-- Admin Profile Section -->
+            <VBox alignment="CENTER" prefHeight="100.0" prefWidth="220.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 15;">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="15.0" right="15.0" top="5.0" />
+               </VBox.margin>
+               <children>
+                  <Circle radius="30" fill="WHITE" stroke="#e0e0e0">
+                     <VBox.margin>
+                        <Insets bottom="8.0" top="10.0" />
+                     </VBox.margin>
+                  </Circle>
+                  <Label fx:id="adminNameLabel" text="" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Administrator" textFill="#e1e1e1">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" />
+               </padding>
+            </VBox>
+
+            <!-- Navigation Menu -->
+            <VBox spacing="5.0" style="-fx-padding: 10 15 10 15;">
+               <!-- Dashboard -->
+               <Button fx:id="dashboardBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false"
+                       prefHeight="48.0" prefWidth="190.0" styleClass="nav-button"
+                       text="Dashboard">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <!-- Dashboard icon placeholder -->
+                        </image>
+                     </ImageView>
+                  </graphic>
+               </Button>
+
+               <!-- View Subjects -->
+               <Button fx:id="viewSubjectsBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false"
+                       prefHeight="48.0" prefWidth="190.0" styleClass="nav-button-active"
+                       text="View Subjects">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <!-- Subjects icon placeholder -->
+                        </image>
+                     </ImageView>
+                  </graphic>
+               </Button>
+
+               <!-- View Teachers -->
+               <Button fx:id="viewTeachersBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false"
+                       prefHeight="48.0" prefWidth="190.0" styleClass="nav-button"
+                       text="View Teachers">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <!-- Teachers icon placeholder -->
+                        </image>
+                     </ImageView>
+                  </graphic>
+               </Button>
+
+               <!-- View Students -->
+               <Button fx:id="viewStudentsBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false"
+                       prefHeight="48.0" prefWidth="190.0" styleClass="nav-button"
+                       text="View Students">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                        <image>
+                           <!-- Students icon placeholder -->
+                        </image>
+                     </ImageView>
+                  </graphic>
+               </Button>
+            </VBox>
+
+            <!-- Spacer -->
+            <VBox VBox.vgrow="ALWAYS" />
+
+            <!-- Logout Button - Centered -->
+            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="220.0">
+               <children>
+                  <Button fx:id="logoutBtn" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" styleClass="logout-button" text="Logout">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="25.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+      </VBox>
+
+      <!-- Top Header -->
+      <HBox layoutX="240.0" layoutY="20.0" prefHeight="50.0" prefWidth="740.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+         <children>
+            <Label alignment="CENTER_LEFT" prefHeight="50.0" text="Subjects Management" textAlignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="20.0" />
+               </HBox.margin>
+            </Label>
+            <Region HBox.hgrow="ALWAYS" />
+            <HBox alignment="CENTER_RIGHT" prefHeight="50.0" spacing="15.0">
+               <children>
+                  <Label fx:id="dateTimeLabel" text="" textFill="#555555">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                     <HBox.margin>
+                        <Insets right="20.0" />
+                     </HBox.margin>
+                  </Label>
+               </children>
+            </HBox>
+         </children>
+      </HBox>
+
+      <!-- Subjects Overview Card -->
+      <VBox layoutX="240.0" layoutY="90.0" prefHeight="120.0" prefWidth="740.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+         <padding>
+            <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+         </padding>
+         <children>
+            <HBox prefHeight="80.0" prefWidth="690.0" spacing="20.0">
+               <children>
+                  <!-- Total Subjects Card -->
+                  <VBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="200.0" style="-fx-background-color: #e3f2fd; -fx-background-radius: 8;">
+                     <padding>
+                        <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+                     </padding>
+                     <children>
+                        <Label text="Total Subjects" textFill="#1565C0">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="totalSubjectsCountLabel" text="" textFill="#1565C0">
+                           <font>
+                              <Font name="System Bold" size="24.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+
+                  <!-- Departments Card -->
+                  <VBox alignment="CENTER_LEFT" prefHeight="80.0" prefWidth="200.0" style="-fx-background-color: #fff8e1; -fx-background-radius: 8;">
+                     <padding>
+                        <Insets bottom="10.0" left="15.0" right="15.0" top="10.0" />
+                     </padding>
+                     <children>
+                        <Label text="Departments" textFill="#F57F17">
+                           <font>
+                              <Font name="System Bold" size="14.0" />
+                           </font>
+                        </Label>
+                        <Label fx:id="departmentsCountLabel" text="" textFill="#F57F17">
+                           <font>
+                              <Font name="System Bold" size="24.0" />
+                           </font>
+                        </Label>
+                     </children>
+                  </VBox>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+
+      <!-- Subjects Table Section -->
+      <VBox layoutX="240.0" layoutY="230.0" prefHeight="450.0" prefWidth="740.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+         <padding>
+            <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
+         </padding>
+         <children>
+            <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="690.0" spacing="15.0">
+               <children>
+                  <Label text="Subject List" textFill="#333333">
+                     <font>
+                        <Font name="System Bold" size="16.0" />
+                     </font>
+                  </Label>
+                  <Region HBox.hgrow="ALWAYS" />
+
+                  <!-- Search Box -->
+                  <HBox alignment="CENTER" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 20;">
+                     <padding>
+                        <Insets left="15.0" right="15.0" />
+                     </padding>
+                     <children>
+                        <TextField fx:id="searchField" promptText="Search subjects..." style="-fx-background-color: transparent; -fx-border-color: transparent;" HBox.hgrow="ALWAYS" />
+                        <Button mnemonicParsing="false" style="-fx-background-color: transparent;">
+                           <graphic>
+                              <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                                 <!-- Search icon placeholder -->
+                              </ImageView>
+                           </graphic>
+                        </Button>
+                     </children>
+                  </HBox>
+
+                  <!-- Add Subject Button -->
+                  <Button fx:id="addSubjectBtn" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" styleClass="export-button" text="Add Subject">
+                     <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <!-- Add icon placeholder -->
+                        </ImageView>
+                     </graphic>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="15.0" />
+               </VBox.margin>
+            </HBox>
+
+            <!-- TableView with Styling -->
+            <TableView fx:id="subjectsTableView" prefHeight="330.0" prefWidth="690.0" styleClass="modern-table-view">
+               <columns>
+                  <TableColumn fx:id="subjectCodeColumn" prefWidth="100.0" text="SUBJECT CODE" />
+                  <TableColumn fx:id="subjectNameColumn" prefWidth="200.0" text="SUBJECT NAME" />
+                  <TableColumn fx:id="unitsColumn" prefWidth="60.0" text="UNITS" />
+                  <TableColumn fx:id="departmentColumn" prefWidth="120.0" text="DEPARTMENT" />
+                  <TableColumn fx:id="statusColumn" prefWidth="80.0" text="STATUS" />
+                  <TableColumn fx:id="actionsColumn" prefWidth="130.0" text="ACTIONS" />
+               </columns>
+               <placeholder>
+                  <Label text="No content in table" />
+               </placeholder>
+            </TableView>
+
+            <!-- Pagination -->
+            <HBox alignment="CENTER_RIGHT" prefHeight="40.0" prefWidth="690.0" spacing="10.0">
+               <VBox.margin>
+                  <Insets top="10.0" />
+               </VBox.margin>
+               <children>
+                  <Label text="Rows per page:" textFill="#666666">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="rowsPerPageComboBox" prefHeight="25.0" prefWidth="60.0" styleClass="combo-box-base" />
+                  <Label text="0-0 of 0" textFill="#666666">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+                  <Button mnemonicParsing="false" styleClass="pagination-button">
+                     <graphic>
+                        <Label text="&lt;" textFill="#666666" />
+                     </graphic>
+                  </Button>
+                  <Button mnemonicParsing="false" styleClass="pagination-button">
+                     <graphic>
+                        <Label text="&gt;" textFill="#666666" />
+                     </graphic>
+                  </Button>
+               </children>
+            </HBox>
+         </children>
+      </VBox>
+   </children>
+
+   <stylesheets>
+      <URL value="@style.css" />
+   </stylesheets>
+</AnchorPane>

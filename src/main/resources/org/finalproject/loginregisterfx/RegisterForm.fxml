@@ -8,7 +8,10 @@
 <?import javafx.scene.control.PasswordField?>
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.GridPane?>
 <?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.text.Font?>
 <?import javafx.scene.text.Text?>
 
@@ -27,100 +30,133 @@
                </font>
             </Label>
 
-            <!-- Left column -->
-            <Label layoutX="70.0" layoutY="120.0" text="Full name">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <TextField fx:id="fullNameField" layoutX="70.0" layoutY="140.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your full name" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </TextField>
+            <!-- 3x3 Grid Layout -->
+            <GridPane layoutX="50.0" layoutY="115.0" prefHeight="360.0" prefWidth="500.0" hgap="15.0" vgap="25.0">
+               <columnConstraints>
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="156.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="156.0" />
+                  <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="156.0" />
+               </columnConstraints>
+               <rowConstraints>
+                  <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="SOMETIMES" />
+                  <RowConstraints minHeight="10.0" prefHeight="100.0" vgrow="SOMETIMES" />
+               </rowConstraints>
 
-            <Label layoutX="70.0" layoutY="195.0" text="Course">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <TextField fx:id="courseField" layoutX="70.0" layoutY="215.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your course" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </TextField>
+               <!-- Row 0 -->
+               <AnchorPane GridPane.columnIndex="0" GridPane.rowIndex="0">
+                  <Label layoutX="0.0" layoutY="0.0" text="Full name">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="fullNameField" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Enter your full name" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </TextField>
+               </AnchorPane>
 
-            <Label layoutX="70.0" layoutY="270.0" text="Address">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <TextField fx:id="addressField" layoutX="70.0" layoutY="290.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your address" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </TextField>
+               <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="0">
+                  <Label layoutX="0.0" layoutY="0.0" text="Email">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="emailField" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Enter your email address" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </TextField>
+               </AnchorPane>
 
-            <Label layoutX="77.0" layoutY="419.0" text="Role">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <ComboBox fx:id="roleComboBox" layoutX="70.0" layoutY="438.0" prefHeight="40.0" prefWidth="220.0" promptText="Select your role" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15; -fx-cursor: hand;">
-            </ComboBox>
+               <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="0">
+                  <Label layoutX="0.0" layoutY="0.0" text="Phone number">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="phoneField" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Enter your phone number" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </TextField>
+               </AnchorPane>
 
-            <!-- Right column -->
-            <Label layoutX="74.0" layoutY="345.0" text="Birthday">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <DatePicker fx:id="birthdayPicker" layoutX="70.0" layoutY="365.0" prefHeight="40.0" prefWidth="220.0" promptText="Select your birthday" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 5; -fx-cursor: hand;">
-            </DatePicker>
+               <!-- Row 1 -->
+               <AnchorPane GridPane.columnIndex="0" GridPane.rowIndex="1">
+                  <Label layoutX="0.0" layoutY="0.0" text="Course">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="courseField" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Enter your course" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </TextField>
+               </AnchorPane>
 
-            <Label layoutX="310.0" layoutY="120.0" text="Phone number">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <TextField fx:id="phoneField" layoutX="310.0" layoutY="140.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your phone number" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </TextField>
+               <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="1">
+                  <Label layoutX="0.0" layoutY="0.0" text="Password">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <PasswordField fx:id="passwordField" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Enter your password" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </PasswordField>
+               </AnchorPane>
 
-            <Label layoutX="310.0" layoutY="195.0" text="Email">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <TextField fx:id="emailField" layoutX="310.0" layoutY="215.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your email address" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </TextField>
+               <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="1">
+                  <Label layoutX="0.0" layoutY="0.0" text="Confirm password">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <PasswordField fx:id="confirmPasswordField" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Confirm your password" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </PasswordField>
+               </AnchorPane>
 
-            <Label layoutX="314.0" layoutY="270.0" text="Password">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <PasswordField fx:id="passwordField" layoutX="310.0" layoutY="290.0" prefHeight="40.0" prefWidth="220.0" promptText="Enter your password" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </PasswordField>
+               <!-- Row 2 -->
+               <AnchorPane GridPane.columnIndex="0" GridPane.rowIndex="2">
+                  <Label layoutX="0.0" layoutY="0.0" text="Address">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <TextField fx:id="addressField" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Enter your address" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
+                     <font>
+                        <Font size="13.0" />
+                     </font>
+                  </TextField>
+               </AnchorPane>
 
-            <Label layoutX="310.0" layoutY="345.0" text="Confirm password">
-               <font>
-                  <Font name="System Bold" size="13.0" />
-               </font>
-            </Label>
-            <PasswordField fx:id="confirmPasswordField" layoutX="310.0" layoutY="365.0" prefHeight="40.0" prefWidth="220.0" promptText="Confirm your password" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15;">
-               <font>
-                  <Font size="13.0" />
-               </font>
-            </PasswordField>
+               <AnchorPane GridPane.columnIndex="1" GridPane.rowIndex="2">
+                  <Label layoutX="0.0" layoutY="0.0" text="Birthday">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <DatePicker fx:id="birthdayPicker" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Select birthday" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 5; -fx-cursor: hand;">
+                  </DatePicker>
+               </AnchorPane>
+
+               <AnchorPane GridPane.columnIndex="2" GridPane.rowIndex="2">
+                  <Label layoutX="0.0" layoutY="0.0" text="Role">
+                     <font>
+                        <Font name="System Bold" size="13.0" />
+                     </font>
+                  </Label>
+                  <ComboBox fx:id="roleComboBox" layoutX="0.0" layoutY="25.0" prefHeight="40.0" prefWidth="156.0" promptText="Select your role" style="-fx-background-radius: 8; -fx-border-radius: 8; -fx-border-color: #dcdcdc; -fx-border-width: 1px; -fx-padding: 0 15; -fx-cursor: hand;">
+                  </ComboBox>
+               </AnchorPane>
+            </GridPane>
 
             <!-- Register Button -->
             <Button fx:id="registerButton" layoutX="175.0" layoutY="497.0" mnemonicParsing="false" onAction="#onRegisterButtonClick" prefHeight="45.0" prefWidth="250.0" style="-fx-background-color: #2563eb; -fx-background-radius: 25; -fx-text-fill: white; -fx-cursor: hand; -fx-effect: dropshadow(gaussian, rgba(37,99,235,0.25), 8, 0, 0, 4);" text="Create Account">
