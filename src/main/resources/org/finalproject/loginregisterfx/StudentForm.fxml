@@ -313,14 +313,14 @@
                 <!-- TableView with Styling -->
                 <TableView fx:id="subjectsTableView" prefHeight="270.0" prefWidth="620.0" styleClass="modern-table-view">
                     <columns>
-                        <TableColumn fx:id="edpCodeColumn" prefWidth="86.40002131462097" text="EDP CODE" />
-                        <TableColumn fx:id="subjectColumn" prefWidth="139.20001220703125" text="SUBJECT" />
+                        <TableColumn fx:id="edpCodeColumn" prefWidth="81.60003352165222" text="EDP CODE" />
+                        <TableColumn fx:id="subjectColumn" prefWidth="145.5999755859375" text="SUBJECT" />
                         <TableColumn fx:id="typeColumn" prefWidth="50.0" text="TYPE" />
                         <TableColumn fx:id="unitsColumn" prefWidth="61.5999755859375" text="UNITS" />
                         <TableColumn fx:id="daysColumn" prefWidth="48.79998779296875" text="DAYS" />
-                        <TableColumn fx:id="timeColumn" prefWidth="113.5999755859375" text="TIME" />
-                        <TableColumn fx:id="roomColumn" prefWidth="56.0" text="ROOM" />
-                        <TableColumn fx:id="courseColumn" prefWidth="65.60009765625" text="COURSE" />
+                        <TableColumn fx:id="timeColumn" prefWidth="106.40008544921875" text="TIME" />
+                        <TableColumn fx:id="roomColumn" prefWidth="56.800048828125" text="ROOM" />
+                        <TableColumn fx:id="courseColumn" prefWidth="72.7999267578125" text="COURSE" />
                     </columns>
                 </TableView>
 
