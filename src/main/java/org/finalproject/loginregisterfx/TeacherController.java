@@ -280,66 +280,49 @@ public class TeacherController {
             });
             return row;
         });
-    }
-    
-    /**
-     * Show dialog with enrolled students for a subject
+    }    /**
+     * Show enrolled students for a subject using MyStudents.fxml
      */
     private void showEnrolledStudentsDialog(EnrolledStudentsBySubjectModel subject) {
         try {
-            System.out.println("Showing enrolled students for subject: " + subject.getSubjectCode());
+            System.out.println("Opening MyStudents.fxml for subject: " + subject.getSubjectCode());
             
-            // Create dialog
-            Dialog<Void> dialog = new Dialog<>();
-            dialog.setTitle("Students Enrolled in " + subject.getSubjectCode());
-            dialog.setHeaderText("Students enrolled in " + subject.getSubjectName());
+            // Load the MyStudents.fxml
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("MyStudents.fxml"));
+            Parent root = loader.load();
             
-            // Set the button types
-            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.CLOSE);
+            // Get the controller
+            StudentsViewController controller = loader.getController();
             
-            // Create a TableView for the students
-            TableView<StudentModel> studentsTable = new TableView<>();
-            studentsTable.setPrefWidth(500);
-            studentsTable.setPrefHeight(400);
+            // Pass the subject data to the controller
+            controller.setSubjectData(subject);
             
-            // Set up columns
-            TableColumn<StudentModel, String> nameColumn = new TableColumn<>("Name");
-            nameColumn.setCellValueFactory(new PropertyValueFactory<>("name"));
-            nameColumn.setPrefWidth(150);
+            // Create a new stage
+            Stage stage = new Stage();
+            stage.setTitle("Students Enrolled in " + subject.getSubjectCode() + " - " + subject.getSubjectName());
+            stage.initModality(Modality.WINDOW_MODAL);
+            stage.initOwner(mainTableView.getScene().getWindow());
             
-            TableColumn<StudentModel, String> idColumn = new TableColumn<>("ID Number");
-            idColumn.setCellValueFactory(new PropertyValueFactory<>("idNumber"));
-            idColumn.setPrefWidth(100);
+            // Set the scene
+            Scene scene = new Scene(root);
+            stage.setScene(scene);
             
-            TableColumn<StudentModel, String> courseColumn = new TableColumn<>("Course");
-            courseColumn.setCellValueFactory(new PropertyValueFactory<>("course"));
-            courseColumn.setPrefWidth(100);
+            // Apply CSS if needed
+            scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
             
-            TableColumn<StudentModel, String> yearSectionColumn = new TableColumn<>("Year & Section");
-            yearSectionColumn.setCellValueFactory(cellData -> {
-                StudentModel student = cellData.getValue();
-                String yearSection = student.getYearLevelString() + "-" + student.getSection();
-                return javafx.beans.binding.Bindings.createStringBinding(() -> yearSection);
-            });
-            yearSectionColumn.setPrefWidth(120);
+            // Set stage properties
+            stage.setResizable(true);
+            stage.setMinWidth(600);
+            stage.setMinHeight(450);
             
-            // Add columns to table
-            studentsTable.getColumns().addAll(nameColumn, idColumn, courseColumn, yearSectionColumn);
+            // Show the stage
+            stage.show();
             
-            // Add students to the table
-            ObservableList<StudentModel> students = FXCollections.observableArrayList(subject.getEnrolledStudents());
-            studentsTable.setItems(students);
-            
-            // Set the content
-            dialog.getDialogPane().setContent(studentsTable);
-            dialog.getDialogPane().setPrefWidth(520);
-            dialog.getDialogPane().setPrefHeight(500);
-            
-            // Show the dialog
-            dialog.showAndWait();
+            // Debug info - note that the actual student count will be determined by the API call
+            System.out.println("MyStudents view opened for subject: " + subject.getSubjectCode());
             
         } catch (Exception e) {
-            System.err.println("Error showing enrolled students dialog: " + e.getMessage());
+            System.err.println("Error opening MyStudents view: " + e.getMessage());
             e.printStackTrace();
             showError("Error displaying enrolled students: " + e.getMessage());
         }

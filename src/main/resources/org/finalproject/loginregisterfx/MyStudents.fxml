@@ -5,18 +5,30 @@
 <?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
 
-<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.StudentsViewController">
+<AnchorPane prefHeight="400.0" prefWidth="600.0" style="-fx-background-color: #f0f4f8;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.StudentsViewController">
     <children>
         <Label layoutX="51.0" layoutY="22.0" style="-fx-font-size: 18; -fx-font-weight: bold;" text="Students Enrolled" />
-        <TextField fx:id="searchStudentsField" layoutX="51.0" layoutY="55.0" prefWidth="300.0" promptText="Search students" />
-        <TableView fx:id="studentsTableView" layoutY="100.0" prefHeight="300.0" prefWidth="600.0">
+        <TextField fx:id="searchStudentsField" layoutX="51.0" layoutY="55.0" prefWidth="300.0" promptText="Search by ID, name or course">
+            <tooltip>
+                <Tooltip text="Enter student ID, name or course to search" />
+            </tooltip>
+        </TextField>
+        <Label fx:id="subjectInfoLabel" layoutX="51.0" layoutY="85.0" style="-fx-font-style: italic;" text="Loading subject information..." />
+        <TableView fx:id="studentsTableView" layoutX="0.0" layoutY="115.0" prefHeight="285.0" prefWidth="600.0" styleClass="modern-table-view" AnchorPane.bottomAnchor="0.0" AnchorPane.leftAnchor="0.0" AnchorPane.rightAnchor="0.0" AnchorPane.topAnchor="115.0">
             <columns>
                 <TableColumn fx:id="idNumberColumn" prefWidth="120.0" text="ID NUMBER" />
                 <TableColumn fx:id="studentNameColumn" prefWidth="200.0" text="STUDENT NAME" />
                 <TableColumn fx:id="courseColumn" prefWidth="160.0" text="COURSE" />
                 <TableColumn fx:id="sectionColumn" prefWidth="120.0" text="SECTION" />
             </columns>
+            <placeholder>
+                <Label text="Loading students..." />
+            </placeholder>
+            <tooltip>
+                <Tooltip text="Right-click to refresh the list" />
+            </tooltip>
         </TableView>
     </children>
 </AnchorPane>
