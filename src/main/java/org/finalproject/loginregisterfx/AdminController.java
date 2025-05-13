@@ -1077,10 +1077,15 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
             alert.showAndWait();
         });
     }
+    // Inside AdminController
     private void handleLogout() {
         try {
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Logout.fxml"));
             Parent root = loader.load();
+
+            // Find buttons by fx:id
+            Button cancelBtn = (Button) root.lookup("#cancelBtn");
+            Button logoutBtn = (Button) root.lookup("#logoutBtn");
 
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Logout");
@@ -1088,6 +1093,32 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
             dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
             dialogStage.setScene(new Scene(root));
             dialogStage.setResizable(false);
+
+            // Cancel action: just close the dialog
+            if (cancelBtn != null) {
+                cancelBtn.setOnAction(e -> dialogStage.close());
+            }
+
+            // Logout action: perform logout logic, then close dialog and go to login
+            if (logoutBtn != null) {
+                logoutBtn.setOnAction(e -> {
+                    // TODO: Add your logout logic here (e.g., clear session)
+                    try {
+                        Parent loginView = FXMLLoader.load(getClass().getResource("LoginForm.fxml"));
+                        Scene loginScene = new Scene(loginView, 450, 500);
+                        Stage stage = (Stage) this.logoutBtn.getScene().getWindow();
+                        stage.setScene(loginScene);
+                        stage.setTitle("Login Form");
+                        stage.setResizable(false);
+                        stage.show();
+                        stage.centerOnScreen();
+                    } catch (Exception ex) {
+                        showError("Logout error: " + ex.getMessage());
+                    }
+                    dialogStage.close();
+                });
+            }
+
             dialogStage.showAndWait();
         } catch (Exception e) {
             showError("Failed to open logout dialog: " + e.getMessage());
