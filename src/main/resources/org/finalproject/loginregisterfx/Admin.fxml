@@ -172,8 +172,18 @@
                            </graphic>
                         </Button>
                      </children>
-                  </HBox>
-
+                  </HBox>                  <!-- Refresh Button -->
+                  <Button fx:id="refreshButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" styleClass="action-button" text="Refresh">
+                     <graphic>
+                        <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
+                           <!-- Refresh icon placeholder -->
+                        </ImageView>
+                     </graphic>
+                     <HBox.margin>
+                        <Insets right="10.0" />
+                     </HBox.margin>
+                  </Button>
+                  
                   <!-- Add Button -->
                   <Button fx:id="addButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" styleClass="export-button" text="Add Subject">
                      <graphic>

@@ -50,30 +50,54 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
     public enum ViewType { SUBJECTS, TEACHERS, STUDENTS }
     private ViewType currentView = ViewType.SUBJECTS;    @FXML
     private void initialize() {
-        // Set up initial view
-        setupEventHandlers();
-        showSubjectsView();
-        
-        // Set up pagination
-        setupPagination();
-
-        // Add button event handler
-        addButton.setOnAction(e -> showAddDialog());
-        
-        // Refresh button event handler
-        refreshButton.setOnAction(e -> handleRefresh());
-        
-        // Load admin name from session if available
-        AuthService.getUserProfile().thenAccept(user -> {
-            if (user != null && user.has("name")) {
-                String userName = user.get("name").getAsString();
-                Platform.runLater(() -> {
-                    adminNameLabel.setText(userName);
-                });
-            }
-        });
-        
-        logoutBtn.setOnAction(e -> handleLogout());
+        try {
+            System.out.println("Initializing AdminController...");
+            
+            // Set up initial view
+            System.out.println("Setting up event handlers...");
+            setupEventHandlers();
+            
+            System.out.println("Setting up initial view (subjects)...");
+            showSubjectsView();
+            
+            // Set up pagination
+            System.out.println("Setting up pagination...");
+            setupPagination();
+    
+            // Add button event handler
+            System.out.println("Setting up add button event handler...");
+            addButton.setOnAction(e -> showAddDialog());
+            
+            // Refresh button event handler
+            System.out.println("Setting up refresh button event handler...");
+            refreshButton.setOnAction(e -> handleRefresh());
+            
+            // Load admin name from session if available
+            System.out.println("Loading admin user profile...");
+            AuthService.getUserProfile().thenAccept(user -> {
+                if (user != null && user.has("name")) {
+                    String userName = user.get("name").getAsString();
+                    System.out.println("Got admin name from profile: " + userName);
+                    Platform.runLater(() -> {
+                        adminNameLabel.setText(userName);
+                    });
+                } else {
+                    System.out.println("No admin name available in user profile");
+                }
+            }).exceptionally(ex -> {
+                System.err.println("Error loading admin profile: " + ex.getMessage());
+                return null;
+            });
+            
+            System.out.println("Setting up logout button event handler...");
+            logoutBtn.setOnAction(e -> handleLogout());
+            
+            System.out.println("AdminController initialization completed");
+        } catch (Exception e) {
+            System.err.println("ERROR during AdminController initialization: " + e.getMessage());
+            e.printStackTrace();
+            showError("Error initializing Admin view: " + e.getMessage());
+        }
     }
       private void setupPagination() {
         // Set up pagination buttons
@@ -109,81 +133,173 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
         // Initialize pagination info label
         updatePaginationInfo();
     }    private void setupEventHandlers() {
-        viewSubjectsBtn.setOnAction(e -> showSubjectsView());
-        viewTeachersBtn.setOnAction(e -> showTeachersView());
-        viewStudentsBtn.setOnAction(e -> showStudentsView());
-        searchField.setOnAction(e -> handleSearch());
-        
-        // Navigate to dashboard when dashboard button is clicked
-        if (dashboardBtn != null) {
-            dashboardBtn.setOnAction(e -> navigateToDashboard());
-        }
-    }      private void navigateToDashboard() {
         try {
+            System.out.println("Setting up view subjects button click handler...");
+            viewSubjectsBtn.setOnAction(e -> {
+                System.out.println("View subjects button clicked");
+                showSubjectsView();
+            });
+            
+            System.out.println("Setting up view teachers button click handler...");
+            viewTeachersBtn.setOnAction(e -> {
+                System.out.println("View teachers button clicked");
+                showTeachersView();
+            });
+            
+            System.out.println("Setting up view students button click handler...");
+            viewStudentsBtn.setOnAction(e -> {
+                System.out.println("View students button clicked");
+                showStudentsView();
+            });
+            
+            System.out.println("Setting up search field action handler...");
+            searchField.setOnAction(e -> {
+                System.out.println("Search action triggered with query: " + searchField.getText());
+                handleSearch();
+            });
+            
+            // Navigate to dashboard when dashboard button is clicked
+            if (dashboardBtn != null) {
+                System.out.println("Setting up dashboard button click handler...");
+                dashboardBtn.setOnAction(e -> {
+                    System.out.println("Dashboard button clicked");
+                    navigateToDashboard();
+                });
+            } else {
+                System.err.println("WARNING: Dashboard button is null, cannot set up click handler");
+            }
+            
+            System.out.println("All event handlers set up successfully");
+        } catch (Exception e) {
+            System.err.println("ERROR setting up event handlers: " + e.getMessage());
+            e.printStackTrace();
+            showError("Error setting up event handlers: " + e.getMessage());
+        }
+    }private void navigateToDashboard() {
+        try {
+            System.out.println("Navigating to dashboard...");
+            
             // Update button styling before navigation
             dashboardBtn.getStyleClass().remove("nav-button");
             dashboardBtn.getStyleClass().add("nav-button-active");
             
             // Load dashboard view
+            System.out.println("Loading Dashboard.fxml resource...");
             Parent dashboardView = FXMLLoader.load(getClass().getResource("Dashboard.fxml"));
+            
+            System.out.println("Creating new scene...");
             Scene scene = new Scene(dashboardView);
+            
+            System.out.println("Setting scene on stage...");
             Stage stage = (Stage) dashboardBtn.getScene().getWindow();
             stage.setScene(scene);
             stage.show();
             stage.centerOnScreen();
+            
+            System.out.println("Successfully navigated to dashboard");
         } catch (Exception e) {
             System.err.println("Error navigating to dashboard: " + e.getMessage());
             e.printStackTrace();
             showError("Navigation error: " + e.getMessage());
-            e.printStackTrace();
         }
-    }      public void showSubjectsView() {
-        System.out.println("Switching to SUBJECTS view");
-        currentView = ViewType.SUBJECTS;
-        setupSubjectColumns();
-        fetchAndDisplaySubjects("");
-        updateHeaderTitle("Subjects Management");
-        listTitleLabel.setText("Subject List");
-        searchField.setPromptText("Search subjects...");
-        addButton.setText("Add Subject");
-        addButton.setVisible(true); // Show the add button in Subjects view
-        listTitleLabel.setStyle(""); // Remove highlight
-        
-        // Apply the subject context menu
-        applyContextMenu(ViewType.SUBJECTS);
-        
-        // Update navigation button styles
-        updateNavButtonStyles(ViewType.SUBJECTS);
-    }      public void showTeachersView() {
-        System.out.println("Switching to TEACHERS view");
-        currentView = ViewType.TEACHERS;
-        setupTeacherColumns();
-        fetchAndDisplayTeachers("");
-        updateHeaderTitle("Teachers Management");
-        listTitleLabel.setText("Teacher List");
-        searchField.setPromptText("Search teachers...");
-        addButton.setVisible(false); // Hide the add button in Teachers view since we're using context menu
-        listTitleLabel.setStyle(""); // Remove highlight
-        
-        // Apply the teacher context menu
-        applyContextMenu(ViewType.TEACHERS);
-        
-        // Update navigation button styles
-        updateNavButtonStyles(ViewType.TEACHERS);
+    }    public void showSubjectsView() {
+        try {
+            System.out.println("Switching to SUBJECTS view");
+            currentView = ViewType.SUBJECTS;
+            
+            // Add debug output for columns setup
+            System.out.println("Setting up subject columns...");
+            setupSubjectColumns();
+            
+            System.out.println("Fetching and displaying subjects...");
+            fetchAndDisplaySubjects("");
+            
+            System.out.println("Updating UI elements for subjects view...");
+            updateHeaderTitle("Subjects Management");
+            listTitleLabel.setText("Subject List");
+            searchField.setPromptText("Search subjects...");
+            addButton.setText("Add Subject");
+            addButton.setVisible(true); // Show the add button in Subjects view
+            listTitleLabel.setStyle(""); // Remove highlight
+            
+            // Apply the subject context menu
+            System.out.println("Applying context menu for subjects view...");
+            applyContextMenu(ViewType.SUBJECTS);
+            
+            // Update navigation button styles
+            System.out.println("Updating navigation button styles...");
+            updateNavButtonStyles(ViewType.SUBJECTS);
+            
+            System.out.println("Successfully switched to SUBJECTS view");
+        } catch (Exception e) {
+            System.err.println("ERROR in showSubjectsView: " + e.getMessage());
+            e.printStackTrace();
+            showError("Error switching to Subjects view: " + e.getMessage());
+        }
+    }    public void showTeachersView() {
+        try {
+            System.out.println("Switching to TEACHERS view");
+            currentView = ViewType.TEACHERS;
+            
+            System.out.println("Setting up teacher columns...");
+            setupTeacherColumns();
+            
+            System.out.println("Fetching and displaying teachers...");
+            fetchAndDisplayTeachers("");
+            
+            System.out.println("Updating UI elements for teachers view...");
+            updateHeaderTitle("Teachers Management");
+            listTitleLabel.setText("Teacher List");
+            searchField.setPromptText("Search teachers...");
+            addButton.setVisible(false); // Hide the add button in Teachers view since we're using context menu
+            listTitleLabel.setStyle(""); // Remove highlight
+            
+            // Apply the teacher context menu
+            System.out.println("Applying context menu for teachers view...");
+            applyContextMenu(ViewType.TEACHERS);
+            
+            // Update navigation button styles
+            System.out.println("Updating navigation button styles...");
+            updateNavButtonStyles(ViewType.TEACHERS);
+            
+            System.out.println("Successfully switched to TEACHERS view");
+        } catch (Exception e) {
+            System.err.println("ERROR in showTeachersView: " + e.getMessage());
+            e.printStackTrace();
+            showError("Error switching to Teachers view: " + e.getMessage());
+        }
     }
-    
-    public void showStudentsView() {
-        currentView = ViewType.STUDENTS;
-        setupStudentColumns();
-        fetchAndDisplayStudents("");
-        updateHeaderTitle("Students Management");
+      public void showStudentsView() {
+        try {
+            System.out.println("Switching to STUDENTS view");
+            currentView = ViewType.STUDENTS;
+            
+            System.out.println("Setting up student columns...");
+            setupStudentColumns();
+            
+            System.out.println("Fetching and displaying students...");
+            fetchAndDisplayStudents("");
+            
+            System.out.println("Updating UI elements for students view...");        updateHeaderTitle("Students Management");
         listTitleLabel.setText("Student List");
         searchField.setPromptText("Search students...");
         addButton.setVisible(false); // Hide the add button in Students view
         listTitleLabel.setStyle(""); // Remove highlight
         
+        // Apply the appropriate context menu for students
+        System.out.println("Applying context menu for students view...");
+        applyContextMenu(ViewType.STUDENTS);
+        
         // Update navigation button styles
+        System.out.println("Updating navigation button styles...");
         updateNavButtonStyles(ViewType.STUDENTS);
+        
+        System.out.println("Successfully switched to STUDENTS view");
+    } catch (Exception e) {
+        System.err.println("ERROR in showStudentsView: " + e.getMessage());
+        e.printStackTrace();
+        showError("Error switching to Students view: " + e.getMessage());
+    }
     }
     
     /**
@@ -270,10 +386,14 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn<Object, String> emailCol = new TableColumn<>("Email");
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
-        //Phoneup
-        TableColumn<Object, String> phoneCol = new TableColumn<>("");
-        phoneCol.setCellValueFactory(new PropertyValueFactory<>("phone"));        TableColumn<Object, String> deptCol = new TableColumn<>("Department");
+        
+        // Fixed the phone column
+        TableColumn<Object, String> phoneCol = new TableColumn<>("Phone");
+        phoneCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
+        
+        TableColumn<Object, String> deptCol = new TableColumn<>("Department");
         deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
+        
         // Add columns to the TableView, suppressing type safety warning
         @SuppressWarnings("unchecked")
         TableColumn<Object, ?>[] columns = new TableColumn[] {nameCol, emailCol, phoneCol, deptCol};
@@ -1350,28 +1470,38 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
                 });
         });
     }
-    
-    // Helper method to reset and set up the context menu
+      // Helper method to reset and set up the context menu
     private void applyContextMenu(ViewType viewType) {
-        System.out.println("Applying context menu for view type: " + viewType);
-        
-        // First clear any existing row factory
-        mainTableView.setRowFactory(null);
-        
-        // Apply the appropriate context menu based on view type
-        switch (viewType) {
-            case SUBJECTS:
-                SetupSubjectContextMenu.apply(this, mainTableView);
-                break;
-            case TEACHERS:
-                SetupTeacherContextMenu.apply(this, mainTableView);
-                break;
-            case STUDENTS:
-                // No context menu for students yet
-                break;
+        try {
+            System.out.println("Applying context menu for view type: " + viewType);
+            
+            // First clear any existing row factory
+            System.out.println("Clearing existing row factory...");
+            mainTableView.setRowFactory(null);
+            
+            // Apply the appropriate context menu based on view type
+            System.out.println("Setting up context menu based on view type: " + viewType);
+            switch (viewType) {
+                case SUBJECTS:
+                    System.out.println("Applying SetupSubjectContextMenu...");
+                    SetupSubjectContextMenu.apply(this, mainTableView);
+                    break;
+                case TEACHERS:
+                    System.out.println("Applying SetupTeacherContextMenu...");
+                    SetupTeacherContextMenu.apply(this, mainTableView);
+                    break;
+                case STUDENTS:
+                    System.out.println("No context menu for students view yet");
+                    // No context menu for students yet
+                    break;
+            }
+            
+            System.out.println("Context menu successfully applied for " + viewType);
+        } catch (Exception e) {
+            System.err.println("ERROR in applyContextMenu: " + e.getMessage());
+            e.printStackTrace();
+            showError("Error applying context menu: " + e.getMessage());
         }
-        
-        System.out.println("Context menu applied for " + viewType);
     }
 
     // Fallback method to display teacher's subjects from locally stored IDs
@@ -1540,37 +1670,78 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
             statusLabel.setText("Loading subject details...");
             statusLabel.setVisible(true);
         }
-    }
-
-    /**
+    }    /**
      * Handles the refresh button click event.
      * This method resets the cache and fetches fresh data based on the current view.
-     */
-    private void handleRefresh() {
-        System.out.println("Refreshing current view: " + currentView);
-        
-        // Show loading indicator
-        mainTableView.setPlaceholder(new ProgressIndicator());
-        
-        // Clear cached data based on current view
-        switch (currentView) {
-            case SUBJECTS:
-                cachedSubjects.clear();
-                fetchAndDisplaySubjects("");
-                break;
-            case TEACHERS:
-                cachedTeachers.clear();
-                fetchAndDisplayTeachers("");
-                break;
-            case STUDENTS:
-                cachedStudents.clear();
-                fetchAndDisplayStudents("");
-                break;
+     */    private void handleRefresh() {
+        try {
+            System.out.println("Refreshing current view: " + currentView);
+            
+            // Disable refresh button to avoid multiple clicks
+            Platform.runLater(() -> {
+                refreshButton.setDisable(true);
+                refreshButton.setText("Refreshing...");
+            });
+            
+            // Show loading indicator
+            System.out.println("Setting loading indicator...");
+            ProgressIndicator progressIndicator = new ProgressIndicator();
+            progressIndicator.setMaxSize(50, 50);
+            mainTableView.setPlaceholder(progressIndicator);
+            
+            // Clear cached data based on current view
+            System.out.println("Clearing cache for view: " + currentView);
+            switch (currentView) {
+                case SUBJECTS:
+                    System.out.println("Clearing subjects cache...");
+                    cachedSubjects.clear();
+                    System.out.println("Fetching subjects...");
+                    fetchAndDisplaySubjects("");
+                    break;
+                case TEACHERS:
+                    System.out.println("Clearing teachers cache...");
+                    cachedTeachers.clear();
+                    System.out.println("Fetching teachers...");
+                    fetchAndDisplayTeachers("");
+                    break;
+                case STUDENTS:
+                    System.out.println("Clearing students cache...");
+                    cachedStudents.clear();
+                    System.out.println("Fetching students...");
+                    fetchAndDisplayStudents("");
+                    break;
+            }
+            
+            // Reset pagination
+            System.out.println("Resetting pagination...");
+            currentPage = 0;
+            updatePaginationInfo();
+            
+            // Re-enable refresh button with slight delay for visual feedback
+            new Thread(() -> {
+                try {
+                    // Small delay to make the refresh action visible to users
+                    Thread.sleep(800);
+                    Platform.runLater(() -> {
+                        refreshButton.setDisable(false);
+                        refreshButton.setText("Refresh");
+                    });
+                } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
+                }
+            }).start();
+            
+            System.out.println("Refresh completed for view: " + currentView);
+        } catch (Exception e) {
+            System.err.println("ERROR in handleRefresh: " + e.getMessage());
+            e.printStackTrace();
+            // Make sure button is re-enabled in case of error
+            Platform.runLater(() -> {
+                refreshButton.setDisable(false);
+                refreshButton.setText("Refresh");
+            });
+            showError("Error refreshing view: " + e.getMessage());
         }
-        
-        // Reset pagination
-        currentPage = 0;
-        updatePaginationInfo();
     }
 }
 

@@ -9,7 +9,8 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
 public class AuthService {
-    private static final String BASE_URL = "http://localhost:5050/api"; // Changed to localhost instead of IP
+    private static final String BASE_URL = "https://sturdy-space-pancake-v6wj54rgr57726xjr-5050.app.github.dev/api";
+    //private static final String BASE_URL = "http://localhost:5050/api";
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();

@@ -1,6 +1,5 @@
 package org.finalproject.loginregisterfx;
 
-import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import javafx.application.Platform;
@@ -17,8 +16,10 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonBar;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
+import javafx.scene.control.ProgressIndicator;
 import javafx.scene.control.Tooltip;
 // Removed unused import: import javafx.scene.paint.Color;
+import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.finalproject.loginregisterfx.Service.AuthService;
 
@@ -27,11 +28,12 @@ import java.util.Map;
 import java.util.Map.Entry;
 
 public class DashboardController {
-    @FXML private Label adminNameLabel;
-    @FXML private Button logoutBtn;
+    @FXML private Label adminNameLabel;    @FXML private Button logoutBtn;
     @FXML private Button dashboardBtn;
-    @FXML private Button viewSubjectsBtn;    @FXML private Button viewTeachersBtn;
+    @FXML private Button viewSubjectsBtn;
+    @FXML private Button viewTeachersBtn;
     @FXML private Button viewStudentsBtn;
+    @FXML private Button refreshButton;
     
     // Statistics labels
     @FXML private Label subjectsCountLabel;
@@ -89,26 +91,48 @@ public class DashboardController {
         dashboardBtn.getStyleClass().remove("nav-button");
         dashboardBtn.getStyleClass().add("nav-button-active");
     }
-    
       private void setupEventHandlers() {
-        // Navigation buttons
-        dashboardBtn.setOnAction(e -> {
-            // Already on dashboard, no action needed
-        });
-        
-        viewSubjectsBtn.setOnAction(e -> {
-            navigateToView("Admin.fxml");
-        });
-        
-        viewTeachersBtn.setOnAction(e -> {
-            navigateToAdminAndShow(AdminController.ViewType.TEACHERS);
-        });
-        
-        viewStudentsBtn.setOnAction(e -> {
-            navigateToAdminAndShow(AdminController.ViewType.STUDENTS);
-        });
-        
-        logoutBtn.setOnAction(e -> handleLogout());
+        try {
+            System.out.println("Setting up event handlers for Dashboard...");
+            
+            // Navigation buttons
+            dashboardBtn.setOnAction(e -> {
+                System.out.println("Dashboard button clicked - already on dashboard");
+                // Already on dashboard, no action needed
+            });
+            
+            viewSubjectsBtn.setOnAction(e -> {
+                System.out.println("View Subjects button clicked");
+                navigateToView("Admin.fxml");
+            });
+            
+            viewTeachersBtn.setOnAction(e -> {
+                System.out.println("View Teachers button clicked");
+                navigateToAdminAndShow(AdminController.ViewType.TEACHERS);
+            });
+            
+            viewStudentsBtn.setOnAction(e -> {
+                System.out.println("View Students button clicked");
+                navigateToAdminAndShow(AdminController.ViewType.STUDENTS);
+            });
+            
+            // Add refresh button handler
+            refreshButton.setOnAction(e -> {
+                System.out.println("Refresh button clicked");
+                handleRefresh();
+            });
+            
+            logoutBtn.setOnAction(e -> {
+                System.out.println("Logout button clicked");
+                handleLogout();
+            });
+            
+            System.out.println("Event handlers setup completed successfully");
+        } catch (Exception e) {
+            System.err.println("ERROR in setupEventHandlers: " + e.getMessage());
+            e.printStackTrace();
+            showError("Initialization error", "Failed to set up event handlers: " + e.getMessage());
+        }
     }
       private void fetchStatistics() {
         // Fetch dashboard statistics from new endpoint
@@ -232,48 +256,75 @@ public class DashboardController {
             }
         });
     }
-    
-    private void navigateToView(String fxmlFile) {
+      private void navigateToView(String fxmlFile) {
         try {
+            System.out.println("Navigating to view: " + fxmlFile);
+            
+            System.out.println("Loading " + fxmlFile + " resource...");
             Parent view = FXMLLoader.load(getClass().getResource(fxmlFile));
+            
+            System.out.println("Creating new scene...");
             Scene scene = new Scene(view);
+            
+            System.out.println("Setting scene on stage...");
             Stage stage = (Stage) dashboardBtn.getScene().getWindow();
             stage.setScene(scene);
+            
+            System.out.println("Showing stage...");
             stage.show();
             stage.centerOnScreen();
+            
+            System.out.println("Successfully navigated to " + fxmlFile);
         } catch (Exception e) {
-            showError("Navigation error", "Could not navigate to the requested view: " + e.getMessage());
+            System.err.println("ERROR in navigateToView: " + e.getMessage());
             e.printStackTrace();
+            showError("Navigation error", "Could not navigate to the requested view: " + e.getMessage());
         }
     }
-    
-    private void navigateToAdminAndShow(AdminController.ViewType viewType) {
+      private void navigateToAdminAndShow(AdminController.ViewType viewType) {
         try {
+            System.out.println("Navigating to Admin view with selected view type: " + viewType);
+            
+            System.out.println("Loading Admin.fxml resource...");
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Admin.fxml"));
+            
+            System.out.println("Loading FXML...");
             Parent adminView = loader.load();
+            
+            System.out.println("Getting controller instance...");
             AdminController controller = loader.getController();
             
             // Show the specific view based on type
+            System.out.println("Setting up the requested view: " + viewType);
             switch (viewType) {
                 case SUBJECTS:
+                    System.out.println("Calling showSubjectsView()...");
                     controller.showSubjectsView();
                     break;
                 case TEACHERS:
+                    System.out.println("Calling showTeachersView()...");
                     controller.showTeachersView();
                     break;
                 case STUDENTS:
+                    System.out.println("Calling showStudentsView()...");
                     controller.showStudentsView();
                     break;
             }
             
+            System.out.println("Creating new scene...");
             Scene scene = new Scene(adminView);
+            
+            System.out.println("Setting scene on stage...");
             Stage stage = (Stage) dashboardBtn.getScene().getWindow();
             stage.setScene(scene);
             stage.show();
             stage.centerOnScreen();
+            
+            System.out.println("Successfully navigated to Admin view with " + viewType + " view");
         } catch (Exception e) {
-            showError("Navigation error", "Could not navigate to the requested view: " + e.getMessage());
+            System.err.println("ERROR in navigateToAdminAndShow: " + e.getMessage());
             e.printStackTrace();
+            showError("Navigation error", "Could not navigate to the requested view: " + e.getMessage());
         }
     }
       private void handleLogout() {
@@ -316,8 +367,7 @@ public class DashboardController {
             // If user clicked Cancel, do nothing and return to the application
         });
     }
-    
-    private void showError(String title, String message) {
+      private void showError(String title, String message) {
         Platform.runLater(() -> {
             Alert alert = new Alert(Alert.AlertType.ERROR);
             alert.setTitle(title);
@@ -325,5 +375,100 @@ public class DashboardController {
             alert.setContentText(message);
             alert.showAndWait();
         });
+    }
+      /**
+     * Handles the refresh button click event.
+     * This method resets data and fetches fresh statistics.
+     */
+    private void handleRefresh() {
+        try {
+            System.out.println("Refreshing dashboard data...");
+            
+            // Create progress indicators for loading state
+            ProgressIndicator subjectsProgress = new ProgressIndicator();
+            subjectsProgress.setMaxSize(30, 30);
+            ProgressIndicator teachersProgress = new ProgressIndicator();
+            teachersProgress.setMaxSize(30, 30);
+            ProgressIndicator studentsProgress = new ProgressIndicator();
+            studentsProgress.setMaxSize(30, 30);
+            
+            // Reset statistics labels to show loading state
+            Platform.runLater(() -> {
+                System.out.println("Setting loading indicators...");
+                
+                // Replace labels with progress indicators
+                VBox subjectsBox = (VBox) subjectsCountLabel.getParent();
+                int subjectsIndex = subjectsBox.getChildren().indexOf(subjectsCountLabel);
+                if (subjectsIndex >= 0) {
+                    subjectsBox.getChildren().add(subjectsIndex, subjectsProgress);
+                    subjectsCountLabel.setVisible(false);
+                }
+                
+                VBox teachersBox = (VBox) teachersCountLabel.getParent();
+                int teachersIndex = teachersBox.getChildren().indexOf(teachersCountLabel);
+                if (teachersIndex >= 0) {
+                    teachersBox.getChildren().add(teachersIndex, teachersProgress);
+                    teachersCountLabel.setVisible(false);
+                }
+                
+                VBox studentsBox = (VBox) studentsCountLabel.getParent();
+                int studentsIndex = studentsBox.getChildren().indexOf(studentsCountLabel);
+                if (studentsIndex >= 0) {
+                    studentsBox.getChildren().add(studentsIndex, studentsProgress);
+                    studentsCountLabel.setVisible(false);
+                }
+                
+                // Clear the pie chart and add a loading indicator
+                System.out.println("Clearing pie chart...");
+                departmentPieChart.setData(FXCollections.observableArrayList());
+                departmentPieChart.setTitle("Loading data...");
+            });
+            
+            // Fetch fresh statistics with a small delay to show loading indicators
+            System.out.println("Fetching fresh statistics...");
+            new Thread(() -> {
+                try {
+                    // Small delay to show loading indicators
+                    Thread.sleep(500);
+                    
+                    // Fetch statistics
+                    fetchStatistics();
+                    
+                    // Restore visibility of labels and remove progress indicators
+                    Platform.runLater(() -> {
+                        // Remove progress indicators and restore labels
+                        VBox subjectsBox = (VBox) subjectsCountLabel.getParent();
+                        if (subjectsBox.getChildren().contains(subjectsProgress)) {
+                            subjectsBox.getChildren().remove(subjectsProgress);
+                        }
+                        subjectsCountLabel.setVisible(true);
+                        
+                        VBox teachersBox = (VBox) teachersCountLabel.getParent();
+                        if (teachersBox.getChildren().contains(teachersProgress)) {
+                            teachersBox.getChildren().remove(teachersProgress);
+                        }
+                        teachersCountLabel.setVisible(true);
+                        
+                        VBox studentsBox = (VBox) studentsCountLabel.getParent();
+                        if (studentsBox.getChildren().contains(studentsProgress)) {
+                            studentsBox.getChildren().remove(studentsProgress);
+                        }
+                        studentsCountLabel.setVisible(true);
+                        
+                        departmentPieChart.setTitle("Subjects by Department");
+                    });
+                    
+                    System.out.println("Dashboard refresh completed successfully");
+                } catch (Exception e) {
+                    System.err.println("ERROR in refresh thread: " + e.getMessage());
+                    e.printStackTrace();
+                    showError("Refresh error", "Could not refresh dashboard data: " + e.getMessage());
+                }
+            }).start();
+        } catch (Exception e) {
+            System.err.println("ERROR in handleRefresh: " + e.getMessage());
+            e.printStackTrace();
+            showError("Refresh error", "Could not refresh dashboard data: " + e.getMessage());
+        }
     }
 }
