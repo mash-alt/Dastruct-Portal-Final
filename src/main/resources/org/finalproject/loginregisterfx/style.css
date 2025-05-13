@@ -483,3 +483,25 @@
 .delete-button:hover {
     -fx-background-color: #fa5252;
 }
+
+/* Add these to your style.css file if needed */
+.secondary-button {
+    -fx-background-color: #7f8c8d;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+}
+
+.secondary-button:hover {
+    -fx-background-color: #95a5a6;
+}
+
+.logout-button {
+    -fx-background-color: #e74c3c;
+    -fx-text-fill: white;
+    -fx-font-weight: bold;
+    -fx-background-radius: 5;
+}
+
+.logout-button:hover {
+    -fx-background-color: #c0392b;
+}

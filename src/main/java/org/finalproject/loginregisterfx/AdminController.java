@@ -1076,46 +1076,23 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
             alert.setContentText(message);
             alert.showAndWait();
         });
-    }    
-      private void handleLogout() {
-        // Create a confirmation dialog
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Confirm Logout");
-        confirmDialog.setHeaderText("Are you sure you want to log out?");
-        confirmDialog.setContentText("Any unsaved changes will be lost.");
-        
-        // Customize button text
-        ButtonType logoutButton = new ButtonType("Logout", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        confirmDialog.getButtonTypes().setAll(logoutButton, cancelButton);
-        
-        // Show dialog and wait for response
-        confirmDialog.showAndWait().ifPresent(response -> {
-            if (response == logoutButton) {
-                // User confirmed logout, proceed with logout process
-                AuthService.logout().thenAccept(success -> {
-                    Platform.runLater(() -> {
-                        try {
-                            // Return to login screen
-                            javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("LoginForm.fxml"));
-                            javafx.scene.Parent loginView = loader.load();
-                            javafx.stage.Stage stage = (javafx.stage.Stage) logoutBtn.getScene().getWindow();
-                            stage.setScene(new javafx.scene.Scene(loginView, 450, 500));
-                            stage.setTitle("Login Form");
-                            stage.setResizable(false);
-                            stage.show();
-                            stage.centerOnScreen();
-                        } catch (Exception ex) {
-                            showError("Failed to return to login screen: " + ex.getMessage());
-                        }
-                    });
-                }).exceptionally(ex -> {
-                    Platform.runLater(() -> showError("Logout failed: " + ex.getMessage()));
-                    return null;
-                });
-            }
-            // If user clicked Cancel, do nothing and return to the application
-        });
+    }
+    private void handleLogout() {
+        try {
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Logout.fxml"));
+            Parent root = loader.load();
+
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Logout");
+            dialogStage.initOwner(logoutBtn.getScene().getWindow());
+            dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            dialogStage.setScene(new Scene(root));
+            dialogStage.setResizable(false);
+            dialogStage.showAndWait();
+        } catch (Exception e) {
+            showError("Failed to open logout dialog: " + e.getMessage());
+            e.printStackTrace();
+        }
     }
 
     // Pagination methods
