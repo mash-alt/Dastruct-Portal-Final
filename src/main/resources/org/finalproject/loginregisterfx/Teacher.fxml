@@ -3,7 +3,6 @@
 <?import java.net.URL?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Button?>
-<?import javafx.scene.control.ComboBox?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.control.TableColumn?>
 <?import javafx.scene.control.TableView?>
@@ -44,7 +43,7 @@
                                 <Insets bottom="8.0" top="10.0" />
                             </VBox.margin>
                         </Circle>
-                        <Label fx:id="teacherNameLabel" text="" textFill="WHITE">
+                        <Label fx:id="teacherNameLabel" text="Hawwyyy" textFill="WHITE">
                             <font>
                                 <Font name="System Bold" size="14.0" />
                             </font>
@@ -73,27 +72,7 @@
                         </graphic>
                     </Button>
 
-                    <!-- View Subjects -->
-                    <Button fx:id="viewSubjectsBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button-active" text="View Subjects">
-                        <graphic>
-                            <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
-                                <image>
-                                    <!-- Subjects icon placeholder -->
-                                </image>
-                            </ImageView>
-                        </graphic>
-                    </Button>
-
-                    <!-- View Students -->
-                    <Button fx:id="viewStudentsBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button" text="View Students">
-                        <graphic>
-                            <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
-                                <image>
-                                    <!-- Students icon placeholder -->
-                                </image>
-                            </ImageView>
-                        </graphic>
-                    </Button>
+                    <!-- "My Students" button removed as requested -->
                 </VBox>
 
                 <!-- Spacer -->
@@ -129,7 +108,7 @@
                 <Region HBox.hgrow="ALWAYS" />
                 <HBox alignment="CENTER_RIGHT" prefHeight="50.0" spacing="15.0">
                     <children>
-                        <Label fx:id="dateTimeLabel" prefHeight="20.0" prefWidth="146.0" text="2025-05-08 04:38:56" textFill="#555555">
+                        <Label fx:id="dateTimeLabel" prefHeight="20.0" prefWidth="146.0" text="2025-05-13 15:51:28" textFill="#555555">
                             <font>
                                 <Font size="14.0" />
                             </font>
@@ -148,7 +127,7 @@
                 <Insets bottom="20.0" left="25.0" right="25.0" top="20.0" />
             </padding>
             <children>
-                <!-- List Title, Search, and Add Button Section -->
+                <!-- List Title and Search Section -->
                 <HBox alignment="CENTER_LEFT" prefHeight="50.0" prefWidth="690.0" spacing="15.0">
                     <children>
                         <Label fx:id="listTitleLabel" text="Subject List" textFill="#333333">
@@ -174,15 +153,6 @@
                                 </Button>
                             </children>
                         </HBox>
-
-                        <!-- Add Grade Button -->
-                        <Button fx:id="addButton" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" styleClass="export-button" text="Add Grade">
-                            <graphic>
-                                <ImageView fitHeight="16.0" fitWidth="16.0" pickOnBounds="true" preserveRatio="true">
-                                    <!-- Add icon placeholder -->
-                                </ImageView>
-                            </graphic>
-                        </Button>
                     </children>
                     <VBox.margin>
                         <Insets bottom="15.0" />
@@ -190,14 +160,11 @@
                 </HBox>
 
                 <!-- TableView with Styling -->
-                <TableView fx:id="mainTableView" prefHeight="460.0" prefWidth="689.0" styleClass="modern-table-view">
+                <TableView fx:id="mainTableView" prefHeight="460.0" prefWidth="690.0" styleClass="modern-table-view">
                     <columns>
-                        <TableColumn fx:id="subjectCodeColumn" prefWidth="137.59997248649597" text="SUBJECT CODE" />
-                        <TableColumn fx:id="subjectNameColumn" prefWidth="178.40003967285156" text="SUBJECT NAME" />
-                        <TableColumn fx:id="typeColumn" prefWidth="60.800048828125" text="TYPE" />
-                        <TableColumn fx:id="unitsColumn" prefWidth="72.00006103515625" text="UNITS" />
-                        <TableColumn fx:id="mgColumn" prefWidth="123.19998779296873" text="MG" />
-                        <TableColumn fx:id="fgColumn" prefWidth="123.19998779296873" text="FG" />
+                        <TableColumn fx:id="subjectCodeColumn" prefWidth="227.20007014274597" text="SUBJECT CODE" />
+                        <TableColumn fx:id="subjectNameColumn" prefWidth="258.3999481201172" text="SUBJECT NAME" />
+                  <TableColumn prefWidth="197.60009765625" text="NO. OF ENROLLED STUDENTS" />
                     </columns>
                     <placeholder>
                         <Label text="No content in table" />

@@ -1,0 +1,22 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.control.Label?>
+
+<AnchorPane prefHeight="400.0" prefWidth="600.0" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.StudentsViewController">
+    <children>
+        <Label layoutX="51.0" layoutY="22.0" style="-fx-font-size: 18; -fx-font-weight: bold;" text="Students Enrolled" />
+        <TextField fx:id="searchStudentsField" layoutX="51.0" layoutY="55.0" prefWidth="300.0" promptText="Search students" />
+        <TableView fx:id="studentsTableView" layoutY="100.0" prefHeight="300.0" prefWidth="600.0">
+            <columns>
+                <TableColumn fx:id="idNumberColumn" prefWidth="120.0" text="ID NUMBER" />
+                <TableColumn fx:id="studentNameColumn" prefWidth="200.0" text="STUDENT NAME" />
+                <TableColumn fx:id="courseColumn" prefWidth="160.0" text="COURSE" />
+                <TableColumn fx:id="sectionColumn" prefWidth="120.0" text="SECTION" />
+            </columns>
+        </TableView>
+    </children>
+</AnchorPane>

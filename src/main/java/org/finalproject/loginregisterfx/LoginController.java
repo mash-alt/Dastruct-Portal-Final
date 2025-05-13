@@ -142,6 +142,30 @@ public class LoginController {
                                 e.printStackTrace();
                             }
                         }
+
+                        else if ("Teacher".equalsIgnoreCase(role)) {
+                            try {
+                                FXMLLoader loader = new FXMLLoader(getClass().getResource("/org/finalproject/loginregisterfx/Teacher.fxml"));
+                                Parent teacherView = loader.load();
+
+                                // Optionally, pass user data to the controller if needed
+                                // TeacherController teacherController = loader.getController();
+                                // if (response.has("user")) {
+                                //     JsonObject userObject = response.getAsJsonObject("user");
+                                //     teacherController.initializeTeacherData(userObject);
+                                // }
+
+                                Stage currentStage = (Stage) loginButton.getScene().getWindow();
+                                currentStage.setScene(new Scene(teacherView, 930, 700));
+                                currentStage.setTitle("Teacher Portal");
+                                currentStage.setResizable(false);
+                                currentStage.show();
+                                currentStage.centerOnScreen();
+                            } catch (Exception e) {
+                                showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not open teacher dashboard.");
+                                e.printStackTrace();
+                            }
+                        }
                         // TODO: Implement Teacher role navigation
                     });
                 })

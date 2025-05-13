@@ -15,6 +15,7 @@ public class App extends Application {
         stage.setTitle("Login Form");
         stage.setScene(scene);
         stage.setResizable(false);
+        //stage.setMaximized(true);
         stage.show();
     }
 
