@@ -82,6 +82,14 @@
     -fx-border-width: 1px;
     -fx-border-radius: 8;
     -fx-background-radius: 8;
+    -fx-fixed-cell-size: 40px; /* Fixed height for each row */
+}
+
+/* Force the table to fill its container */
+.table-view-compact {
+    -fx-pref-height: 390px; /* Adjusted to leave just enough space for summary */
+    -fx-max-height: 400px;
+    -fx-min-height: 250px;
 }
 
 .modern-table-view .column-header {

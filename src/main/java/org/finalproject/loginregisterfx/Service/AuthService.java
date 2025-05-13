@@ -9,7 +9,7 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
 public class AuthService {
-    private static final String BASE_URL = "http://127.0.0.1:5050/api"; // Change to your actual API URL
+    private static final String BASE_URL = "http://localhost:5050/api"; // Changed to localhost instead of IP
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
     private static final OkHttpClient client = new OkHttpClient();
     private static final Gson gson = new Gson();
@@ -42,38 +42,54 @@ public class AuthService {
 
     public static CompletableFuture<JsonObject> makePostRequest(String endpoint, Object requestBody) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
-
+        
         try {
             String jsonBody = requestBody != null ? gson.toJson(requestBody) : "";
-            RequestBody body = RequestBody.create(jsonBody, JSON);
-
+            RequestBody body = RequestBody.create(JSON, jsonBody);
+            
+            System.out.println("Making POST request to: " + BASE_URL + endpoint);
+            System.out.println("Request body: " + jsonBody);
+            
             Request.Builder requestBuilder = new Request.Builder()
                     .url(BASE_URL + endpoint)
                     .post(body);
 
             if (authToken != null && !authToken.isEmpty()) {
+                System.out.println("Using auth token: " + authToken.substring(0, Math.min(10, authToken.length())) + "...");
                 requestBuilder.addHeader("Authorization", "Bearer " + authToken);
+            } else {
+                System.out.println("No auth token available");
             }
 
-            client.newCall(requestBuilder.build()).enqueue(new Callback() {
+            Request request = requestBuilder.build();
+            System.out.println("Headers: " + request.headers());
+            
+            client.newCall(request).enqueue(new Callback() {
                 @Override
                 public void onFailure(Call call, IOException e) {
+                    System.err.println("API call failed: " + e.getMessage());
+                    e.printStackTrace();
                     future.completeExceptionally(e);
                 }
 
                 @Override
                 public void onResponse(Call call, Response response) throws IOException {
                     String responseBody = response.body().string();
+                    System.out.println("API response code: " + response.code());
+                    System.out.println("API response body: " + responseBody);
+                    
                     if (response.isSuccessful()) {
                         JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
 
                         // Save token if it exists in the response
                         if (jsonResponse.has("token")) {
                             authToken = jsonResponse.get("token").getAsString();
+                            System.out.println("Updated auth token");
                         }
 
                         future.complete(jsonResponse);
                     } else {
+                        System.err.println("Request failed with code: " + response.code());
                         future.completeExceptionally(new IOException("Request failed: " + responseBody));
                     }
                 }
@@ -124,9 +140,10 @@ public class AuthService {
     // Add PUT request support
     public static CompletableFuture<JsonObject> makePutRequest(String endpoint, Object requestBody) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        
         try {
             String jsonBody = requestBody != null ? gson.toJson(requestBody) : "";
-            RequestBody body = RequestBody.create(jsonBody, JSON);
+            RequestBody body = RequestBody.create(JSON, jsonBody);
 
             Request.Builder requestBuilder = new Request.Builder()
                     .url(BASE_URL + endpoint)
@@ -162,6 +179,7 @@ public class AuthService {
     // Add DELETE request support
     public static CompletableFuture<JsonObject> makeDeleteRequest(String endpoint) {
         CompletableFuture<JsonObject> future = new CompletableFuture<>();
+        
         try {
             Request.Builder requestBuilder = new Request.Builder()
                     .url(BASE_URL + endpoint)

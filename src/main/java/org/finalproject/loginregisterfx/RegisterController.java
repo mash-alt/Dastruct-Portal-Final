@@ -19,27 +19,15 @@ import java.util.ResourceBundle;
 public class RegisterController implements Initializable {
 
     @FXML
-    private TextField fullNameField;
+    private TextField fullNameField;    @FXML
+    private ComboBox<String> programComboBox;
 
     @FXML
-    private TextField idNumberField;
-
-    @FXML
-    private TextField courseField;
-
-    @FXML
-    private TextField addressField;
-
-    @FXML
-    private ComboBox<String> roleComboBox;
-
-    @FXML
+    private TextField addressField;    @FXML
     private DatePicker birthdayPicker;
 
     @FXML
-    private TextField phoneField;
-
-    @FXML
+    private TextField phoneField;    @FXML
     private TextField emailField;
 
     @FXML
@@ -52,20 +40,17 @@ public class RegisterController implements Initializable {
     private Button registerButton;
 
     @FXML
-    private Hyperlink loginLink;
-
-    @Override
+    private Hyperlink loginLink;    @Override
     public void initialize(URL url, ResourceBundle resourceBundle) {
-        // Initialize role combo box with options
-        roleComboBox.getItems().addAll("Student", "Teacher", "Admin");
-
-        // Add listener for role selection
-        roleComboBox.setOnAction(event -> {
-            String selectedRole = roleComboBox.getValue();
-            if (selectedRole != null && (selectedRole.equals("Teacher") || selectedRole.equals("Admin"))) {
-                showTeacherAdminForm();
-            }
-        });
+        // Initialize the program ComboBox with the program codes
+        programComboBox.getItems().addAll(
+            "BSCS", // Bachelor of Science in Computer Science
+            "BSIT", // Bachelor of Science in Information Technology
+            "BSBA", // Bachelor of Science in Business Administration
+            "BSN",  // Bachelor of Science in Nursing
+            "BSMT", // Bachelor of Science in Medical Technology
+            "BSTM"  // Bachelor of Science in Tourism Management
+        );
     }
 
     @FXML
@@ -73,33 +58,38 @@ public class RegisterController implements Initializable {
         // Validate form
         if (validateForm()) {
             registerButton.setDisable(true);
-            System.out.println("Registering student: " + fullNameField.getText());
-
-            // Prepare user data
-            Map<String, Object> userData = new HashMap<>();
-            userData.put("name", fullNameField.getText());
-            userData.put("idNumber", idNumberField.getText());
-            userData.put("course", courseField.getText());
+            System.out.println("Registering student: " + fullNameField.getText());            // Prepare user data
+            Map<String, Object> userData = new HashMap<>();            userData.put("name", fullNameField.getText());
+            userData.put("email", emailField.getText());            userData.put("password", passwordField.getText());            userData.put("phoneNumber", phoneField.getText());
+            userData.put("course", programComboBox.getValue());            userData.put("bday", birthdayPicker.getValue() != null ? birthdayPicker.getValue().toString() : null);
             userData.put("address", addressField.getText());
-            userData.put("birthday", birthdayPicker.getValue() != null ? birthdayPicker.getValue().toString() : null);
-            userData.put("phone", phoneField.getText());
-            userData.put("email", emailField.getText());
-            userData.put("password", passwordField.getText());
-
-            // Get selected role (default to "student" if nothing selected)
-            String selectedRole = roleComboBox.getValue();
-            if (selectedRole == null) selectedRole = "Student";
-
-            final String role = selectedRole;
+            // All new students start at year level 1
+            userData.put("yearLevel", 1);
+            // Always register as student
+            userData.put("role", "student");
+            final String role = "Student";
 
             // Call the API
             AuthService.register(userData, role.toLowerCase())
                     .thenAccept(response -> {
                         javafx.application.Platform.runLater(() -> {
-                            registerButton.setDisable(false);
+                            registerButton.setDisable(false);                            if (role.equalsIgnoreCase("Student")) {
+                                String studentName = response.has("name") ? response.get("name").getAsString() : fullNameField.getText();
+                                System.out.println("A new student has registered (from API): " + studentName);
+                            }                            
                             System.out.println("Registration successful! Response: " + response);
-                            showAlert("Success", "Registration successful! You can now login.");
-                            onLoginLinkClick(new ActionEvent());
+                            
+                            // Debug: print all keys in the response
+                            System.out.println("DEBUG - Response keys:");
+                            for (String key : response.keySet()) {
+                                System.out.println("Key: " + key + ", Value type: " + 
+                                    (response.get(key) != null ? response.get(key).getClass().getName() : "null"));
+                            }
+                            
+                            // Show user details in a new window instead of an alert
+                            showUserDetailsWindow(response);
+                            // Navigate to login after they close the details window
+                            // onLoginLinkClick(new ActionEvent());
                         });
                     })
                     .exceptionally(ex -> {
@@ -128,39 +118,20 @@ public class RegisterController implements Initializable {
             showAlert("Navigation Error", "Could not navigate to login page.");
             e.printStackTrace();
         }
-    }
-
-    private void showTeacherAdminForm() {
-        try {
-            // Load the simplified form for teachers and admins
-            FXMLLoader loader = new FXMLLoader(getClass().getResource("teacher-admin-form.fxml"));
-            Parent teacherAdminView = loader.load();
-
-            // Get controller and pass selected role
-            TeacherAdminController controller = loader.getController();
-            controller.setRole(roleComboBox.getValue());
-
-            // Show in new stage or replace current scene
-            Scene teacherAdminScene = new Scene(teacherAdminView);
-            Stage currentStage = (Stage) roleComboBox.getScene().getWindow();
-            currentStage.setScene(teacherAdminScene);
-            currentStage.show();
-            currentStage.centerOnScreen();
-        } catch (IOException e) {
-            showAlert("Form Error", "Could not load the special registration form.");
-            e.printStackTrace();
-        }
-    }
+    }    // Method removed as it's no longer needed with Student-only registration
 
     private boolean validateForm() {
         // Basic validation
         if (fullNameField.getText().isEmpty()) {
             showAlert("Validation Error", "Please enter your full name.");
             return false;
-        }
-
-        if (emailField.getText().isEmpty() || !emailField.getText().contains("@")) {
+        }        if (emailField.getText().isEmpty() || !emailField.getText().contains("@")) {
             showAlert("Validation Error", "Please enter a valid email address.");
+            return false;
+        }
+        
+        if (programComboBox.getValue() == null) {
+            showAlert("Validation Error", "Please select a program.");
             return false;
         }
 
@@ -175,13 +146,63 @@ public class RegisterController implements Initializable {
         }
 
         return true;
-    }
-
-    private void showAlert(String title, String message) {
+    }    private void showAlert(String title, String message) {
         Alert alert = new Alert(Alert.AlertType.INFORMATION);
         alert.setTitle(title);
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
+    }      private void showUserDetailsWindow(com.google.gson.JsonObject response) {
+        try {
+            // Extract the correct user data from the response
+            com.google.gson.JsonObject userData = response;
+            
+            // Check if data is inside a "data" or "user" field (common API response patterns)
+            if (response.has("data") && response.get("data").isJsonObject()) {
+                userData = response.getAsJsonObject("data");
+                System.out.println("Using data object: " + userData);
+            } else if (response.has("user") && response.get("user").isJsonObject()) {
+                userData = response.getAsJsonObject("user");
+                System.out.println("Using user object: " + userData);
+            } else {
+                // If no nested structure, just create a new object with form values as backup
+                if (!response.has("name") && !response.has("email")) {                    userData = new com.google.gson.JsonObject();
+                    userData.addProperty("name", fullNameField.getText());
+                    userData.addProperty("email", emailField.getText());
+                    userData.addProperty("course", programComboBox.getValue());
+                    userData.addProperty("phoneNumber", phoneField.getText());
+                    userData.addProperty("address", addressField.getText());
+                    userData.addProperty("yearLevel", 1);
+                    
+                    if (birthdayPicker.getValue() != null) {
+                        userData.addProperty("bday", birthdayPicker.getValue().toString());
+                    }
+                    
+                    System.out.println("Created backup user data from form fields: " + userData);
+                }
+            }
+            
+            // Load the FXML
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("UserDetailsWindow.fxml"));
+            Parent root = loader.load();
+            
+            // Get the controller and set data
+            UserDetailsController controller = loader.getController();
+            controller.setParentController(this);
+            controller.setUserData(userData);
+            
+            // Create a new stage
+            Stage detailsStage = new Stage();
+            detailsStage.setTitle("Registration Successful");
+            detailsStage.initModality(javafx.stage.Modality.APPLICATION_MODAL); // Block input to other windows
+            detailsStage.setScene(new Scene(root));
+            
+            // Show the window and wait for it to close
+            detailsStage.showAndWait();
+            
+        } catch (IOException e) {
+            e.printStackTrace();
+            showAlert("Error", "Could not display registration details: " + e.getMessage());
+        }
     }
 }

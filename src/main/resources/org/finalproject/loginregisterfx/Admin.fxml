@@ -137,19 +137,7 @@
                   <Insets left="20.0" />
                </HBox.margin>
             </Label>
-            <Region HBox.hgrow="ALWAYS" />
-            <HBox alignment="CENTER_RIGHT" prefHeight="50.0" spacing="15.0">
-               <children>
-                  <Label fx:id="dateTimeLabel" text="" textFill="#555555">
-                     <font>
-                        <Font size="14.0" />
-                     </font>
-                     <HBox.margin>
-                        <Insets right="20.0" />
-                     </HBox.margin>
-                  </Label>
-               </children>
-            </HBox>
+            <!-- Removed the dateTime label from top right to be consistent with Dashboard view -->
          </children>
       </HBox>
 
@@ -213,23 +201,17 @@
                   <Insets top="10.0" />
                </VBox.margin>
                <children>
-                  <Label text="Rows per page:" textFill="#666666">
+                  <Label fx:id="paginationInfoLabel" text="0-0 of 0" textFill="#666666">
                      <font>
                         <Font size="12.0" />
                      </font>
                   </Label>
-                  <ComboBox fx:id="rowsPerPageComboBox" prefHeight="25.0" prefWidth="60.0" styleClass="combo-box-base" />
-                  <Label text="0-0 of 0" textFill="#666666">
-                     <font>
-                        <Font size="12.0" />
-                     </font>
-                  </Label>
-                  <Button mnemonicParsing="false" styleClass="pagination-button">
+                  <Button fx:id="prevPageButton" mnemonicParsing="false" styleClass="pagination-button">
                      <graphic>
                         <Label text="&lt;" textFill="#666666" />
                      </graphic>
                   </Button>
-                  <Button mnemonicParsing="false" styleClass="pagination-button">
+                  <Button fx:id="nextPageButton" mnemonicParsing="false" styleClass="pagination-button">
                      <graphic>
                         <Label text="&gt;" textFill="#666666" />
                      </graphic>

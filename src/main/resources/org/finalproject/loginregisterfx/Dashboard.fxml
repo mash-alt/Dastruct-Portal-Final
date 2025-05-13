@@ -1,0 +1,244 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.chart.PieChart?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.Region?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Rectangle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="1000.0" style="-fx-background-color: #f0f4f8;" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.DashboardController">
+   <children>
+      <!-- Side Navigation Panel - This part is the same as Admin.fxml but is copied for consistency -->
+      <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="220.0" style="-fx-background-color: linear-gradient(to bottom, #36404a, #292e49); -fx-background-radius: 0 20 20 0;">
+         <children>
+            <!-- App Branding -->
+            <HBox alignment="CENTER" prefHeight="90.0" prefWidth="220.0" spacing="10">
+               <children>
+                  <Rectangle arcHeight="20.0" arcWidth="20.0" fill="WHITE" height="40.0" stroke="TRANSPARENT" strokeType="INSIDE" width="40.0" />
+                  <Label alignment="CENTER" text="Admin Portal" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="22.0" />
+                     </font>
+                  </Label>
+               </children>
+            </HBox>
+
+            <!-- Admin Profile Section -->
+            <VBox alignment="CENTER" prefHeight="100.0" prefWidth="220.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 15;">
+               <VBox.margin>
+                  <Insets bottom="20.0" left="15.0" right="15.0" top="5.0" />
+               </VBox.margin>
+               <children>
+                  <Rectangle arcHeight="60.0" arcWidth="60.0" fill="WHITE" height="60.0" stroke="#e0e0e0" strokeType="INSIDE" width="60.0">
+                     <VBox.margin>
+                        <Insets bottom="8.0" top="10.0" />
+                     </VBox.margin>
+                  </Rectangle>
+                  <Label fx:id="adminNameLabel" text="" textFill="WHITE">
+                     <font>
+                        <Font name="System Bold" size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Administrator" textFill="#e1e1e1">
+                     <font>
+                        <Font size="12.0" />
+                     </font>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets bottom="10.0" />
+               </padding>
+            </VBox>
+
+            <!-- Navigation Menu - Same as Admin.fxml but with Dashboard button styled differently -->
+            <VBox spacing="5.0" style="-fx-padding: 10 15 10 15;">
+               <!-- Dashboard -->               <Label text="MENU" textFill="#9aa0ab">
+                  <font>
+                     <Font size="12.0" />
+                  </font>
+                  <VBox.margin>
+                     <Insets bottom="5.0" left="5.0" />
+                  </VBox.margin>
+               </Label>
+               <Button fx:id="dashboardBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button-active" text="Dashboard">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" />
+                  </graphic>
+               </Button>               <!-- View Subjects -->
+               <Button fx:id="viewSubjectsBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button" text="View Subjects">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" />
+                  </graphic>
+               </Button>               <!-- View Teachers -->
+               <Button fx:id="viewTeachersBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button" text="View Teachers">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" />
+                  </graphic>
+               </Button>               <!-- View Students -->
+               <Button fx:id="viewStudentsBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button" text="View Students">
+                  <graphic>
+                     <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true" />
+                  </graphic>
+               </Button>
+            </VBox>
+
+            <!-- Spacer -->
+            <VBox VBox.vgrow="ALWAYS" />            <!-- Logout Button - Centered -->
+            <HBox alignment="CENTER" prefHeight="60.0" prefWidth="220.0">
+               <children>
+                  <Button fx:id="logoutBtn" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" styleClass="logout-button" text="Logout">
+                     <HBox.margin>
+                        <Insets />
+                     </HBox.margin>
+                  </Button>
+               </children>
+               <VBox.margin>
+                  <Insets bottom="25.0" />
+               </VBox.margin>
+            </HBox>
+         </children>
+      </VBox>      <!-- Top Header -->
+      <HBox layoutX="240.0" layoutY="20.0" prefHeight="50.0" prefWidth="740.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+         <children>
+            <Label text="Dashboard" textAlignment="CENTER">
+               <font>
+                  <Font name="System Bold" size="20.0" />
+               </font>
+               <HBox.margin>
+                  <Insets left="20.0" />
+               </HBox.margin>            </Label>
+         </children>
+         <padding>
+            <Insets bottom="10.0" left="10.0" right="10.0" top="10.0" />
+         </padding>
+      </HBox>
+
+      <!-- Dashboard Content -->
+      <HBox layoutX="240.0" layoutY="85.0" prefHeight="150.0" prefWidth="740.0" spacing="20.0">
+         <!-- Subjects Card -->
+         <VBox alignment="CENTER" prefHeight="150.0" prefWidth="233.3" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <children>
+               <Label text="Total Subjects" textFill="#666666">
+                  <font>
+                     <Font name="System Bold" size="16.0" />
+                  </font>
+               </Label>
+               <Label fx:id="subjectsCountLabel" text="0" textFill="#4287f5">
+                  <font>
+                     <Font name="System Bold" size="36.0" />
+                  </font>
+               </Label>
+               <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#4287f5" height="5.0" stroke="TRANSPARENT" strokeType="INSIDE" width="50.0" />
+            </children>
+         </VBox>
+         
+         <!-- Teachers Card -->
+         <VBox alignment="CENTER" prefHeight="150.0" prefWidth="233.3" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <children>
+               <Label text="Total Teachers" textFill="#666666">
+                  <font>
+                     <Font name="System Bold" size="16.0" />
+                  </font>
+               </Label>
+               <Label fx:id="teachersCountLabel" text="0" textFill="#42c46f">
+                  <font>
+                     <Font name="System Bold" size="36.0" />
+                  </font>
+               </Label>
+               <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#42c46f" height="5.0" stroke="TRANSPARENT" strokeType="INSIDE" width="50.0" />
+            </children>
+         </VBox>
+         
+         <!-- Students Card -->
+         <VBox alignment="CENTER" prefHeight="150.0" prefWidth="233.3" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+            <children>
+               <Label text="Total Students" textFill="#666666">
+                  <font>
+                     <Font name="System Bold" size="16.0" />
+                  </font>
+               </Label>
+               <Label fx:id="studentsCountLabel" text="0" textFill="#f5a742">
+                  <font>
+                     <Font name="System Bold" size="36.0" />
+                  </font>
+               </Label>
+               <Rectangle arcHeight="5.0" arcWidth="5.0" fill="#f5a742" height="5.0" stroke="TRANSPARENT" strokeType="INSIDE" width="50.0" />
+            </children>
+         </VBox>
+      </HBox>
+      
+      <!-- Recent Activity Section (Optional) -->
+      <VBox layoutX="240.0" layoutY="250.0" prefHeight="430.0" prefWidth="740.0" style="-fx-background-color: white; -fx-background-radius: 10; -fx-effect: dropshadow(gaussian, rgba(0,0,0,0.1), 10, 0, 0, 2);">
+         <children>
+            <Label text="System Overview" textFill="#333333">
+               <font>
+                  <Font name="System Bold" size="18.0" />
+               </font>
+               <VBox.margin>
+                  <Insets bottom="15.0" left="20.0" top="20.0" />
+               </VBox.margin>
+            </Label>
+            
+            <VBox spacing="10.0">
+               <children>
+                  <Label text="Welcome to the Student Portal Admin Dashboard!" textFill="#333333">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="This dashboard provides an overview of your educational institution's data." textFill="#666666" wrapText="true">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+                  <Label text="Use the navigation menu on the left to manage subjects, teachers, and students." textFill="#666666" wrapText="true">
+                     <font>
+                        <Font size="14.0" />
+                     </font>
+                  </Label>
+               </children>
+               <padding>
+                  <Insets left="20.0" right="20.0" />
+               </padding>
+            </VBox>
+            
+            <!-- Department Distribution -->
+            <VBox spacing="10.0">
+               <VBox.margin>
+                  <Insets top="30.0" />
+               </VBox.margin>
+               <children>
+                  <Label text="Department Distribution" textFill="#333333">
+                     <font>
+                        <Font name="System Bold" size="16.0" />
+                     </font>
+                  </Label>
+                    <!-- Pie Chart for Department Distribution -->
+                  <HBox alignment="CENTER">
+                     <children>
+                        <PieChart fx:id="departmentPieChart" prefHeight="300.0" prefWidth="600.0" title="Subjects by Department" />
+                     </children>
+                     <padding>
+                        <Insets top="10.0" />
+                     </padding>
+                  </HBox>
+               </children>
+               <padding>
+                  <Insets left="20.0" right="20.0" />
+               </padding>
+            </VBox>
+         </children>
+      </VBox>
+   </children>
+
+   <stylesheets>
+      <URL value="@style.css" />
+   </stylesheets>
+</AnchorPane>

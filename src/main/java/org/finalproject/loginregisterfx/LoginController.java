@@ -9,6 +9,9 @@ import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.stage.Stage;
 import org.finalproject.loginregisterfx.Service.AuthService;
+import org.finalproject.loginregisterfx.Service.SessionManager;
+
+import com.google.gson.JsonObject;
 
 public class LoginController {
     @FXML
@@ -75,9 +78,7 @@ public class LoginController {
         }
 
         System.out.println("Login attempt with username: " + username + " and role: " + role);
-        loginButton.setDisable(true);
-
-        // Call API for login
+        loginButton.setDisable(true);        // Call API for login
         AuthService.login(username, password, role)
                 .thenAccept(response -> {
                     javafx.application.Platform.runLater(() -> {
@@ -90,26 +91,58 @@ public class LoginController {
                             if (response.has("user") && response.getAsJsonObject("user").has("name")) {
                                 name = response.getAsJsonObject("user").get("name").getAsString();
                             }
+                            
+                            // Store session data
+                            String token = response.has("token") ? response.get("token").getAsString() : "";
+                            JsonObject userData = response.has("user") ? response.getAsJsonObject("user") : new JsonObject();
+                            
+                            // Start session with authentication data
+                            SessionManager.getInstance().startSession(token, userData, role.toLowerCase());
+                            
                         } catch (Exception e) {
-                            System.out.println("Error extracting name from response: " + e.getMessage());
+                            System.out.println("Error extracting data from response: " + e.getMessage());
                         }
+                        
                         showAlert(Alert.AlertType.INFORMATION, "Login Successful",
                                 "Welcome back, " + name + "!");
+                        
                         if ("Admin".equalsIgnoreCase(role)) {
                             try {
-                                Parent adminView = FXMLLoader.load(getClass().getResource("Admin.fxml"));
+                                Parent dashboardView = FXMLLoader.load(getClass().getResource("Dashboard.fxml"));
                                 Stage currentStage = (Stage) loginButton.getScene().getWindow();
-                                currentStage.setScene(new Scene(adminView, 1000, 700));
+                                currentStage.setScene(new Scene(dashboardView, 1000, 700));
                                 currentStage.setTitle("Admin Dashboard");
-                                currentStage.setResizable(false);
+                                currentStage.setResizable(true);
+                                currentStage.setMaximized(true);
                                 currentStage.show();
                                 currentStage.centerOnScreen();
                             } catch (Exception e) {
                                 showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not open admin dashboard.");
                                 e.printStackTrace();
+                            }                        } else if ("Student".equalsIgnoreCase(role)) {
+                            try {
+                                FXMLLoader loader = new FXMLLoader(getClass().getResource("StudentForm.fxml"));
+                                Parent studentView = loader.load();
+                                
+                                // Get the controller and pass the student data
+                                StudentController studentController = loader.getController();
+                                if (response.has("user")) {
+                                    JsonObject userObject = response.getAsJsonObject("user");
+                                    studentController.initializeStudentData(userObject);
+                                }
+                                
+                                Stage currentStage = (Stage) loginButton.getScene().getWindow();
+                                currentStage.setScene(new Scene(studentView, 930, 700));
+                                currentStage.setTitle("Student Portal");
+                                currentStage.setResizable(false);
+                                currentStage.show();
+                                currentStage.centerOnScreen();
+                            } catch (Exception e) {
+                                showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not open student dashboard.");
+                                e.printStackTrace();
                             }
                         }
-                        // TODO: Navigate to appropriate dashboard based on role
+                        // TODO: Implement Teacher role navigation
                     });
                 })
                 .exceptionally(ex -> {

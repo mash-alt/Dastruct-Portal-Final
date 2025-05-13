@@ -1,0 +1,619 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import java.net.URL?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Button?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ScrollPane?>
+<?import javafx.scene.control.TableView?>
+<?import javafx.scene.control.TableColumn?>
+<?import javafx.scene.image.ImageView?>
+<?import javafx.scene.layout.AnchorPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.Circle?>
+<?import javafx.scene.text.Font?>
+
+<AnchorPane prefHeight="700.0" prefWidth="930.0" style="-fx-background-color: #f0f4f8;" xmlns="http://javafx.com/javafx/17.0.6" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.StudentController">
+    <children>
+        <!-- Side Navigation Panel with Dark Gradient -->
+        <VBox layoutX="0.0" layoutY="0.0" prefHeight="700.0" prefWidth="220.0" style="-fx-background-color: linear-gradient(to bottom, #0f2027, #203a43, #2c5364); -fx-background-radius: 0 20 20 0;">
+            <children>
+                <!-- App Branding -->
+                <HBox alignment="CENTER" prefHeight="90.0" prefWidth="220.0" spacing="10">
+                    <children>
+                        <Circle fill="WHITE" radius="20" />
+                        <Label alignment="CENTER" text="Student Portal" textFill="WHITE">
+                            <font>
+                                <Font name="System Bold" size="22.0" />
+                            </font>
+                        </Label>
+                    </children>
+                </HBox>
+
+                <!-- Student Profile Section -->
+                <VBox alignment="CENTER" prefHeight="100.0" prefWidth="220.0" style="-fx-background-color: rgba(255,255,255,0.1); -fx-background-radius: 15;">
+                    <VBox.margin>
+                        <Insets bottom="20.0" left="15.0" right="15.0" top="5.0" />
+                    </VBox.margin>
+                    <children>
+                        <Circle fill="WHITE" radius="30" stroke="#e0e0e0">
+                            <VBox.margin>
+                                <Insets bottom="8.0" top="10.0" />
+                            </VBox.margin>
+                        </Circle>
+                        <Label fx:id="studentNameLabel" text="" textFill="WHITE">
+                            <font>
+                                <Font name="System Bold" size="14.0" />
+                            </font>
+                        </Label>
+                        <Label fx:id="studentIDLabel" text="" textFill="#e1e1e1">
+                            <font>
+                                <Font size="12.0" />
+                            </font>
+                        </Label>
+                    </children>
+                    <padding>
+                        <Insets bottom="10.0" />
+                    </padding>
+                </VBox>
+
+                <!-- Navigation Menu -->
+                <VBox spacing="5.0" style="-fx-padding: 10 15 10 15;">
+                    <!-- Profile -->
+                    <Button fx:id="dashboardBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" onAction="#switchToProfile" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button" text="Profile">
+                        <graphic>
+                            <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <!-- Dashboard icon placeholder -->
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+
+                    <!-- Enrollment -->
+                    <Button fx:id="enrollmentBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" onAction="#switchToEnrollment" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button" text="Enrollment">
+                        <graphic>
+                            <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <!-- Enrollment icon placeholder -->
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+
+                    <!-- Study Load -->
+                    <Button fx:id="studyLoadBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" onAction="#switchToStudyLoad" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button-active" text="Study Load">
+                        <graphic>
+                            <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <!-- Study load icon placeholder -->
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+
+                    <!-- E Grade -->
+                    <Button fx:id="eGradeBtn" alignment="BASELINE_LEFT" graphicTextGap="15.0" mnemonicParsing="false" onAction="#switchToEGrade" prefHeight="48.0" prefWidth="190.0" styleClass="nav-button" text="E Grade">
+                        <graphic>
+                            <ImageView fitHeight="18.0" fitWidth="18.0" pickOnBounds="true" preserveRatio="true">
+                                <image>
+                                    <!-- E Grade icon placeholder -->
+                                </image>
+                            </ImageView>
+                        </graphic>
+                    </Button>
+                </VBox>
+
+                <!-- Spacer -->
+                <VBox VBox.vgrow="ALWAYS" />
+
+                <!-- Logout Button - Centered -->
+                <HBox alignment="CENTER" prefHeight="60.0" prefWidth="220.0">
+                    <children>
+                        <Button fx:id="logoutBtn" alignment="CENTER" contentDisplay="CENTER" mnemonicParsing="false" onAction="#handleLogout" styleClass="logout-button" text="Logout">
+                            <HBox.margin>
+                                <Insets />
+                            </HBox.margin>
+                        </Button>
+                    </children>
+                    <VBox.margin>
+                        <Insets bottom="25.0" />
+                    </VBox.margin>
+                </HBox>
+            </children>
+        </VBox>
+        
+        <!-- Main Content Area -->
+        <AnchorPane layoutX="240.0" layoutY="20.0" prefHeight="660.0" prefWidth="670.0">
+            <!-- Content Stack -->
+            <StackPane fx:id="contentArea" prefHeight="660.0" prefWidth="670.0">
+                <!-- Profile Content (default) -->
+                <VBox fx:id="profileContent" spacing="20.0" visible="true" VBox.vgrow="ALWAYS">
+                    <children>
+                        <!-- Header -->
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Student Profile" styleClass="section-header">
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" />
+                            </padding>
+                        </HBox>
+                        
+                        <!-- ScrollPane for profile content -->
+                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll-pane"
+                            style="-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;">
+                            <content>
+                                <VBox spacing="20.0">
+                        
+                        <!-- Student Info Card -->
+                        <VBox styleClass="info-card" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                            <children>
+                                <!-- Card Header -->
+                                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #2c5364; -fx-background-radius: 15 15 0 0;">
+                                    <children>
+                                        <Label text="Student Information" textFill="WHITE">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                
+                                <!-- Card Content -->
+                                <HBox spacing="30.0">
+                                    <children>
+                                        <!-- Student Basic Info Column -->
+                                        <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <HBox>
+                                                    <children>
+                                                        <Label text="Full Name: " styleClass="info-label">
+                                                            <font>
+                                                                <Font name="System Bold" size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <Label fx:id="fullNameValue" text="" styleClass="info-value">
+                                                            <font>
+                                                                <Font size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </HBox>
+                                                <HBox>
+                                                    <children>
+                                                        <Label text="Student ID: " styleClass="info-label">
+                                                            <font>
+                                                                <Font name="System Bold" size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <Label fx:id="studentIdValue" text="" styleClass="info-value">
+                                                            <font>
+                                                                <Font size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </HBox>
+                                                <HBox>
+                                                    <children>
+                                                        <Label text="Email: " styleClass="info-label">
+                                                            <font>
+                                                                <Font name="System Bold" size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <Label fx:id="emailValue" text="" styleClass="info-value">
+                                                            <font>
+                                                                <Font size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                        
+                                        <!-- Academic Info Column -->
+                                        <VBox spacing="15.0" HBox.hgrow="ALWAYS">
+                                            <children>
+                                                <HBox>
+                                                    <children>
+                                                        <Label text="Course: " styleClass="info-label">
+                                                            <font>
+                                                                <Font name="System Bold" size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <Label fx:id="courseValue" text="" styleClass="info-value">
+                                                            <font>
+                                                                <Font size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </HBox>
+                                                <HBox>
+                                                    <children>
+                                                        <Label text="Year Level: " styleClass="info-label">
+                                                            <font>
+                                                                <Font name="System Bold" size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <Label fx:id="yearLevelValue" text="" styleClass="info-value">
+                                                            <font>
+                                                                <Font size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </HBox>
+                                                <HBox>
+                                                    <children>
+                                                        <Label text="Section: " styleClass="info-label">
+                                                            <font>
+                                                                <Font name="System Bold" size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                        <Label fx:id="sectionValue" text="" styleClass="info-value">
+                                                            <font>
+                                                                <Font size="14.0" />
+                                                            </font>
+                                                        </Label>
+                                                    </children>
+                                                </HBox>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+                                    </padding>
+                                </HBox>
+                            </children>
+                        </VBox>
+                        
+                        <!-- GPA Card -->
+                        <VBox styleClass="info-card" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                            <children>
+                                <!-- Card Header -->
+                                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #2c5364; -fx-background-radius: 15 15 0 0;">
+                                    <children>
+                                        <Label text="Academic Performance" textFill="WHITE">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                
+                                <!-- GPA Content -->
+                                <HBox alignment="CENTER_LEFT" spacing="30.0">
+                                    <children>
+                                        <!-- GPA Value -->
+                                        <VBox alignment="CENTER" spacing="5.0" prefWidth="150.0" style="-fx-background-color: #f8f9fa; -fx-background-radius: 10;">
+                                            <children>
+                                                <Label text="Current GPA" styleClass="info-label">
+                                                    <font>
+                                                        <Font name="System Bold" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <Label fx:id="gpaValue" text="0.00" styleClass="gpa-value" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #2c5364;">
+                                                </Label>
+                                            </children>
+                                            <padding>
+                                                <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+                                            </padding>
+                                        </VBox>
+                                        
+                                        <!-- Enrolled Subjects -->
+                                        <VBox spacing="5.0">
+                                            <children>
+                                                <Label text="Subjects Enrolled" styleClass="info-label">
+                                                    <font>
+                                                        <Font name="System Bold" size="14.0" />
+                                                    </font>
+                                                </Label>
+                                                <Label fx:id="subjectsEnrolledValue" text="0" styleClass="info-value">
+                                                    <font>
+                                                        <Font size="14.0" />
+                                                    </font>
+                                                </Label>
+                                            </children>
+                                        </VBox>
+                                    </children>
+                                    <padding>
+                                        <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+                                    </padding>
+                                </HBox>
+                            </children>
+                        </VBox>
+                    </content>
+                </ScrollPane>
+            </children>
+        </VBox>
+
+        <!-- Enrollment Content -->
+                <VBox fx:id="enrollmentContent" spacing="20.0" visible="false" VBox.vgrow="ALWAYS">
+                    <children>
+                        <!-- Header -->
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Course Enrollment" styleClass="section-header">
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" />
+                            </padding>
+                        </HBox>
+                        
+                        <!-- ScrollPane for enrollment content -->
+                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll-pane"
+                            style="-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;">
+                            <content>
+                                <VBox spacing="20.0">
+                        
+                        <!-- School Year Info Card -->
+                        <VBox styleClass="info-card" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                            <children>
+                                <!-- Card Header -->
+                                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #2c5364; -fx-background-radius: 15 15 0 0;">
+                                    <children>
+                                        <Label text="Enrollment Period" textFill="WHITE">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                
+                                <!-- Card Content -->
+                                <VBox spacing="15.0" style="-fx-padding: 20;">
+                                    <children>
+                                        <Label text="School Year 2025-2026" style="-fx-font-size: 18; -fx-font-weight: bold;">
+                                        </Label>
+                                        <Label text="Enrollment is now open for the current school year. Complete your enrollment process to reserve your slot in your preferred courses." wrapText="true">
+                                        </Label>
+                                        <Label fx:id="enrollmentStatusLabel" text="Status: Not Enrolled" style="-fx-font-weight: bold; -fx-text-fill: #e74c3c;">
+                                        </Label>
+                                        
+                                        <Button fx:id="startEnrollmentBtn" styleClass="export-button" text="Start Enrollment Process" onAction="#handleStartEnrollment">
+                                            <VBox.margin>
+                                                <Insets top="10.0" />
+                                            </VBox.margin>
+                                        </Button>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                        
+                        <!-- Next Year Enrollment Card -->
+                        <VBox styleClass="info-card" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                            <children>
+                                <!-- Card Header -->
+                                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #2c5364; -fx-background-radius: 15 15 0 0;">
+                                    <children>
+                                        <Label text="Next School Year Enrollment" textFill="WHITE">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                
+                                <!-- Card Content -->
+                                <VBox spacing="15.0" style="-fx-padding: 20;">
+                                    <children>
+                                        <Label text="School Year 2026-2027" style="-fx-font-size: 18; -fx-font-weight: bold;">
+                                        </Label>
+                                        <Label text="Early enrollment for next school year is available only for currently enrolled students. Get an early advantage by securing your spot for next year's classes." wrapText="true">
+                                        </Label>
+                                        
+                                        <Button fx:id="nextYearEnrollmentBtn" styleClass="export-button" text="Enroll for Next Year" onAction="#handleNextYearEnrollment" disable="true">
+                                            <VBox.margin>
+                                                <Insets top="10.0" />
+                                            </VBox.margin>
+                                        </Button>
+                                    </children>
+                                </VBox>
+                            </children>
+                        </VBox>
+                        
+                        <!-- Enrollment Steps Card -->
+                        <VBox styleClass="info-card" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                            <children>
+                                <!-- Card Header -->
+                                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #2c5364; -fx-background-radius: 15 15 0 0;">
+                                    <children>
+                                        <Label text="Enrollment Process" textFill="WHITE">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                
+                                <!-- Card Content -->
+                                <VBox spacing="15.0" style="-fx-padding: 20;">
+                                    <children>
+                                        <HBox spacing="15.0">
+                                            <children>
+                                                <Label text="1." style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                <VBox spacing="5.0">
+                                                    <Label text="Submit Enrollment Request" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                    <Label text="Complete the enrollment form with your personal information and course preferences." wrapText="true"/>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                        
+                                        <HBox spacing="15.0">
+                                            <children>
+                                                <Label text="2." style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                <VBox spacing="5.0">
+                                                    <Label text="Academic Clearance" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                    <Label text="Ensure that you have academic clearance from your previous courses/semesters." wrapText="true"/>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                        
+                                        <HBox spacing="15.0">
+                                            <children>
+                                                <Label text="3." style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                <VBox spacing="5.0">
+                                                    <Label text="Financial Clearance" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                    <Label text="Complete all financial obligations or establish a payment plan with the finance department." wrapText="true"/>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                        
+                                        <HBox spacing="15.0">
+                                            <children>
+                                                <Label text="4." style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                <VBox spacing="5.0">
+                                                    <Label text="Enrollment Confirmation" style="-fx-font-weight: bold; -fx-font-size: 14;"/>
+                                                    <Label text="Once all steps are completed, you will receive an enrollment confirmation with your final class schedule." wrapText="true"/>
+                                                </VBox>
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </children>
+                </VBox>
+                
+                <!-- Study Load Content -->
+                <VBox fx:id="studyLoadContent" spacing="20.0" visible="false" VBox.vgrow="ALWAYS">
+                    <children>
+                        <!-- Header -->
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Study Load" styleClass="section-header">
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" />
+                            </padding>
+                        </HBox>
+                        
+                        <!-- ScrollPane for content -->
+                        <ScrollPane fitToWidth="true" fitToHeight="true" VBox.vgrow="ALWAYS" styleClass="content-scroll-pane"
+                            style="-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;">
+                            <content>
+                                <VBox spacing="20.0">
+                        
+                        <!-- Enrollment Status Card -->
+                        <VBox styleClass="info-card" style="-fx-background-color: white; -fx-background-radius: 15; -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.1), 10, 0, 0, 5);">
+                            <children>
+                                <!-- Card Header -->
+                                <HBox alignment="CENTER_LEFT" style="-fx-background-color: #2c5364; -fx-background-radius: 15 15 0 0;">
+                                    <children>
+                                        <Label text="Enrolled Subjects" textFill="WHITE">
+                                            <font>
+                                                <Font name="System Bold" size="16.0" />
+                                            </font>
+                                            <padding>
+                                                <Insets bottom="15.0" left="20.0" right="20.0" top="15.0" />
+                                            </padding>
+                                        </Label>
+                                    </children>
+                                </HBox>
+                                
+                                <!-- Card Content -->
+                                <VBox spacing="15.0" style="-fx-padding: 20;">
+                                    <children>
+                                        <Label fx:id="schoolYearLabel" text="School Year 2025-2026" style="-fx-font-size: 18; -fx-font-weight: bold;" />
+                                        
+                                        <!-- Enrolled subjects table -->
+                                        <TableView fx:id="subjectsTable" prefHeight="300.0" styleClass="enrolled-subjects-table" VBox.vgrow="ALWAYS">
+                                            <columns>
+                                                <TableColumn fx:id="subjectCodeCol" text="Code" prefWidth="100" />
+                                                <TableColumn fx:id="subjectNameCol" text="Subject" prefWidth="250" />
+                                                <TableColumn fx:id="subjectUnitsCol" text="Units" prefWidth="60" />
+                                                <TableColumn fx:id="scheduleCol" text="Schedule" prefWidth="150" />
+                                                <TableColumn fx:id="instructorCol" text="Instructor" prefWidth="150" />
+                                            </columns>
+                                        </TableView>
+                                        
+                                        <!-- Summary information -->
+                                        <HBox spacing="20" alignment="CENTER_RIGHT">
+                                            <children>
+                                                <Label text="Total Units:" style="-fx-font-weight: bold;" />
+                                                <Label fx:id="totalUnitsLabel" text="0" />
+                                            </children>
+                                        </HBox>
+                                        
+                                        <!-- Action buttons -->
+                                        <HBox spacing="10" alignment="CENTER_RIGHT">
+                                            <children>
+                                                <Button fx:id="printStudyLoadBtn" styleClass="action-button" text="Print Study Load" onAction="#handlePrintStudyLoad" />
+                                                <Button fx:id="exportStudyLoadBtn" styleClass="export-button" text="Export to PDF" onAction="#handleExportStudyLoad" />
+                                            </children>
+                                        </HBox>
+                                    </children>
+                                </VBox>
+                            </children>
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </children>
+                </VBox>
+                
+                <!-- E Grade Content -->
+                <VBox fx:id="eGradeContent" spacing="20.0" visible="false" VBox.vgrow="ALWAYS">
+                    <children>
+                        <!-- Header -->
+                        <HBox alignment="CENTER_LEFT">
+                            <children>
+                                <Label text="Electronic Grade Records" styleClass="section-header">
+                                    <font>
+                                        <Font name="System Bold" size="24.0" />
+                                    </font>
+                                </Label>
+                            </children>
+                            <padding>
+                                <Insets bottom="10.0" />
+                            </padding>
+                        </HBox>
+                        <!-- ScrollPane for e-grade content -->
+                        <ScrollPane fitToWidth="true" VBox.vgrow="ALWAYS" styleClass="content-scroll-pane"
+                            style="-fx-background: transparent; -fx-background-color: transparent; -fx-padding: 0;">
+                            <content>
+                                <VBox spacing="20.0">
+                                    <!-- Placeholder content -->
+                                    <Label text="E Grade Content - Will be implemented in future updates." />
+                                </VBox>
+                            </content>
+                        </ScrollPane>
+                    </children>
+                </VBox>
+            </StackPane>
+        </AnchorPane>
+    </children>
+
+    <stylesheets>
+        <URL value="@style.css" />
+    </stylesheets>
+</AnchorPane>
