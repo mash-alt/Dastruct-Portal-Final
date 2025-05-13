@@ -191,7 +191,7 @@ public class StudentController {
             this.studentData = new StudentModel(userData);
             
             // Save student in session for persistence
-            SessionManager.getInstance().setCurrentStudent(studentData);
+            SessionManager.getInstance().updateStudentData(userData);
             
             // Make sure UI updates happen on JavaFX thread
             javafx.application.Platform.runLater(() -> {
