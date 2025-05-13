@@ -135,9 +135,7 @@
                                 <Font name="System Bold" size="16.0" />
                             </font>
                         </Label>
-                        <Region HBox.hgrow="ALWAYS" />
-
-                        <!-- Search Box -->
+                        <Region HBox.hgrow="ALWAYS" />                        <!-- Search Box -->
                         <HBox alignment="CENTER" prefHeight="40.0" prefWidth="250.0" style="-fx-background-color: #f5f5f5; -fx-background-radius: 20;">
                             <padding>
                                 <Insets left="15.0" right="15.0" />
@@ -153,18 +151,23 @@
                                 </Button>
                             </children>
                         </HBox>
+                        
+                        <!-- Refresh Button -->
+                        <Button fx:id="refreshButton" mnemonicParsing="false" styleClass="action-button" text="Refresh">
+                            <HBox.margin>
+                                <Insets left="10.0" />
+                            </HBox.margin>
+                        </Button>
                     </children>
                     <VBox.margin>
                         <Insets bottom="15.0" />
                     </VBox.margin>
-                </HBox>
-
-                <!-- TableView with Styling -->
+                </HBox>                <!-- TableView with Styling -->
                 <TableView fx:id="mainTableView" prefHeight="460.0" prefWidth="690.0" styleClass="modern-table-view">
                     <columns>
                         <TableColumn fx:id="subjectCodeColumn" prefWidth="227.20007014274597" text="SUBJECT CODE" />
                         <TableColumn fx:id="subjectNameColumn" prefWidth="258.3999481201172" text="SUBJECT NAME" />
-                  <TableColumn prefWidth="197.60009765625" text="NO. OF ENROLLED STUDENTS" />
+                        <TableColumn fx:id="enrolledStudentsColumn" prefWidth="197.60009765625" text="NO. OF ENROLLED STUDENTS" />
                     </columns>
                     <placeholder>
                         <Label text="No content in table" />

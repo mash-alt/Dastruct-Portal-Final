@@ -2,9 +2,13 @@ package org.finalproject.loginregisterfx;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
+import javafx.application.Platform;
 import javafx.fxml.FXML;
+import javafx.fxml.FXMLLoader;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
+import javafx.scene.Parent;
+import javafx.scene.Scene;
 import javafx.scene.control.Alert;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
@@ -13,6 +17,7 @@ import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
+import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.finalproject.loginregisterfx.models.StudentModel;
 import org.finalproject.loginregisterfx.models.SubjectModel;
@@ -386,46 +391,40 @@ public class StudentController {
     
     /**
      * Handle logout button click
-     */
-    @FXML
-    public void handleLogout() {
-        // Show confirmation dialog
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Confirm Logout");
-        confirmAlert.setHeaderText(null);
-        confirmAlert.setContentText("Are you sure you want to logout?");
-        
-        confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
-                try {
-                    // End session
-                    SessionManager.getInstance().endSession();
-                    
-                    // Call logout endpoint if needed
-                    AuthService.logout()
-                        .exceptionally(ex -> {
-                            System.err.println("Error during logout: " + ex.getMessage());
-                            return null; // Continue with local logout even if API call fails
-                        });
-                    
-                    // Load login form
-                    javafx.fxml.FXMLLoader loader = new javafx.fxml.FXMLLoader(getClass().getResource("LoginForm.fxml"));
-                    javafx.scene.Parent loginView = loader.load();
-                    
-                    // Get current stage
-                    Stage currentStage = (Stage) logoutBtn.getScene().getWindow();
-                    currentStage.setScene(new javafx.scene.Scene(loginView));
-                    currentStage.setTitle("Student Portal Login");
-                    currentStage.setResizable(false);
-                    currentStage.show();
-                    currentStage.centerOnScreen();
-                    
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not return to login screen.");
-                }
+     */    @FXML    public void handleLogout() {
+        try {
+            System.out.println("Opening logout confirmation dialog...");
+            
+            // Load the Logout.fxml dialog
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Logout.fxml"));
+            Parent root = loader.load();
+            
+            // Get the controller and pass the owner stage
+            LogoutDialogController controller = loader.getController();
+            controller.setOwnerStage((Stage) logoutBtn.getScene().getWindow());
+            
+            // End student session if needed (this will be managed in LogoutDialogController)
+            if (SessionManager.getInstance() != null) {
+                SessionManager.getInstance().endSession();
             }
-        });
+            
+            // Create and configure dialog stage
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Logout");
+            dialogStage.initOwner(logoutBtn.getScene().getWindow());
+            dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            dialogStage.setScene(new Scene(root));
+            dialogStage.setResizable(false);
+            dialogStage.centerOnScreen();
+            
+            // Show the dialog
+            dialogStage.showAndWait();
+            
+        } catch (Exception e) {
+            System.err.println("Failed to open logout dialog: " + e.getMessage());
+            e.printStackTrace();
+            showAlert(Alert.AlertType.ERROR, "Logout Error", "Failed to open logout dialog: " + e.getMessage());
+        }
     }
     
     /**

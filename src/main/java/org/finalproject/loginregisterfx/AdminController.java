@@ -13,10 +13,10 @@ import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox; // Added import for HBox
-import javafx.scene.control.ProgressIndicator;
 import javafx.stage.Stage;
 import javafx.geometry.Insets;
 import org.finalproject.loginregisterfx.Service.AuthService;
+import org.finalproject.loginregisterfx.LogoutDialogController;
 import org.finalproject.loginregisterfx.models.StudentModel;
 import org.finalproject.loginregisterfx.models.SubjectModel;
 import org.finalproject.loginregisterfx.models.TeacherModel;
@@ -386,10 +386,9 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
         nameCol.setCellValueFactory(new PropertyValueFactory<>("name"));
         TableColumn<Object, String> emailCol = new TableColumn<>("Email");
         emailCol.setCellValueFactory(new PropertyValueFactory<>("email"));
-        
-        // Fixed the phone column
+          // Fixed the phone column
         TableColumn<Object, String> phoneCol = new TableColumn<>("Phone");
-        phoneCol.setCellValueFactory(new PropertyValueFactory<>("phoneNumber"));
+        phoneCol.setCellValueFactory(new PropertyValueFactory<>("phone"));
         
         TableColumn<Object, String> deptCol = new TableColumn<>("Department");
         deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
@@ -1077,52 +1076,35 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
             alert.showAndWait();
         });
     }
-    // Inside AdminController
+    // Inside AdminController    
     private void handleLogout() {
         try {
+            System.out.println("Opening logout confirmation dialog...");
+            
+            // Load the Logout.fxml dialog
             FXMLLoader loader = new FXMLLoader(getClass().getResource("Logout.fxml"));
             Parent root = loader.load();
-
-            // Find buttons by fx:id
-            Button cancelBtn = (Button) root.lookup("#cancelBtn");
-            Button logoutBtn = (Button) root.lookup("#logoutBtn");
-
+            
+            // Get the controller and pass the owner stage
+            LogoutDialogController controller = loader.getController();
+            controller.setOwnerStage((Stage) logoutBtn.getScene().getWindow());
+            
+            // Create and configure dialog stage
             Stage dialogStage = new Stage();
             dialogStage.setTitle("Logout");
             dialogStage.initOwner(logoutBtn.getScene().getWindow());
             dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
             dialogStage.setScene(new Scene(root));
             dialogStage.setResizable(false);
-
-            // Cancel action: just close the dialog
-            if (cancelBtn != null) {
-                cancelBtn.setOnAction(e -> dialogStage.close());
-            }
-
-            // Logout action: perform logout logic, then close dialog and go to login
-            if (logoutBtn != null) {
-                logoutBtn.setOnAction(e -> {
-                    // TODO: Add your logout logic here (e.g., clear session)
-                    try {
-                        Parent loginView = FXMLLoader.load(getClass().getResource("LoginForm.fxml"));
-                        Scene loginScene = new Scene(loginView, 450, 500);
-                        Stage stage = (Stage) this.logoutBtn.getScene().getWindow();
-                        stage.setScene(loginScene);
-                        stage.setTitle("Login Form");
-                        stage.setResizable(false);
-                        stage.show();
-                        stage.centerOnScreen();
-                    } catch (Exception ex) {
-                        showError("Logout error: " + ex.getMessage());
-                    }
-                    dialogStage.close();
-                });
-            }
-
+            dialogStage.centerOnScreen();
+            
+            // Show the dialog
             dialogStage.showAndWait();
+            
         } catch (Exception e) {
-            showError("Failed to open logout dialog: " + e.getMessage());
+            System.err.println("Failed to open logout dialog: " + e.getMessage());
             e.printStackTrace();
+            showError("Failed to open logout dialog: " + e.getMessage());
         }
     }
 
@@ -1334,183 +1316,198 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
      * Show a dialog with all subjects assigned to a specific teacher
      * @param teacher The teacher to view assigned subjects for
      */
-    public void showTeacherAssignedSubjects(TeacherModel teacher) {
-        // Create a dialog to display the subjects
-        Dialog<Void> dialog = new Dialog<>();
-        dialog.setTitle("Subjects Assigned to " + teacher.getName());
-        dialog.setHeaderText("Viewing subjects assigned to " + teacher.getName());
-        ButtonType closeButtonType = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
-        dialog.getDialogPane().getButtonTypes().add(closeButtonType);
+public void showTeacherAssignedSubjects(TeacherModel teacher) {
+    // Create a dialog to display the subjects
+    Dialog<Void> dialog = new Dialog<>();
+    dialog.setTitle("Subjects Assigned to " + teacher.getName());
+    dialog.setHeaderText("Viewing subjects assigned to " + teacher.getName());
+    ButtonType closeButtonType = new ButtonType("Close", ButtonBar.ButtonData.CANCEL_CLOSE);
+    dialog.getDialogPane().getButtonTypes().add(closeButtonType);
+    
+    // Create layout grid
+    GridPane grid = new GridPane();
+    grid.setHgap(10);
+    grid.setVgap(10);
+    grid.setPadding(new Insets(20, 150, 10, 10));
+    
+    // Create table view for subjects
+    TableView<SubjectModel> subjectsTableView = new TableView<>();
+    subjectsTableView.setPrefWidth(500);
+    subjectsTableView.setPrefHeight(300);
+    
+    // Add columns to the table
+    TableColumn<SubjectModel, String> codeCol = new TableColumn<>("Subject Code");
+    codeCol.setCellValueFactory(new PropertyValueFactory<>("edpCode"));
+    codeCol.setPrefWidth(100);
+    
+    TableColumn<SubjectModel, String> nameCol = new TableColumn<>("Subject Name");
+    nameCol.setCellValueFactory(new PropertyValueFactory<>("subjectName"));
+    nameCol.setPrefWidth(200);
+    
+    TableColumn<SubjectModel, Integer> unitsCol = new TableColumn<>("Units");
+    unitsCol.setCellValueFactory(new PropertyValueFactory<>("units"));
+    unitsCol.setPrefWidth(60);
+    
+    TableColumn<SubjectModel, String> deptCol = new TableColumn<>("Department");
+    deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
+    deptCol.setPrefWidth(100);
+      
+    // Add columns to the table view
+    @SuppressWarnings("unchecked")
+    TableColumn<SubjectModel, ?>[] columns = new TableColumn[] {codeCol, nameCol, unitsCol, deptCol};
+    subjectsTableView.getColumns().addAll(columns);
+    
+    // Add a loading indicator
+    ProgressIndicator progressIndicator = new ProgressIndicator();
+    progressIndicator.setVisible(true);
+    
+    // Add a status label
+    Label statusLabel = new Label("Loading subjects...");
+    
+    // Create a container for the progress indicator
+    HBox loadingBox = new HBox(10, progressIndicator, statusLabel);
+    loadingBox.setAlignment(javafx.geometry.Pos.CENTER);
+    
+    // Add components to the grid
+    grid.add(loadingBox, 0, 0);
+    grid.add(subjectsTableView, 0, 1);
+    
+    dialog.getDialogPane().setContent(grid);
+    
+    // Make API call to get the teacher's subjects
+    String teacherName = teacher.getName();
+    
+    // Log for debugging
+    System.out.println("Getting subjects for teacher: " + teacherName);
+    if (teacher.getAssignedSubjectIds() != null) {
+        System.out.println("Teacher has " + teacher.getAssignedSubjectIds().size() + " subject IDs stored locally");
+    }
+    
+    // Show the dialog before making the API call
+    Platform.runLater(() -> {
+        dialog.show();
         
-        // Create layout grid
-        GridPane grid = new GridPane();
-        grid.setHgap(10);
-        grid.setVgap(10);
-        grid.setPadding(new Insets(20, 150, 10, 10));
-        
-        // Create table view for subjects
-        TableView<SubjectModel> subjectsTableView = new TableView<>();
-        subjectsTableView.setPrefWidth(500);
-        subjectsTableView.setPrefHeight(300);
-        
-        // Add columns to the table
-        TableColumn<SubjectModel, String> codeCol = new TableColumn<>("Subject Code");
-        codeCol.setCellValueFactory(new PropertyValueFactory<>("edpCode"));
-        codeCol.setPrefWidth(100);
-        
-        TableColumn<SubjectModel, String> nameCol = new TableColumn<>("Subject Name");
-        nameCol.setCellValueFactory(new PropertyValueFactory<>("subjectName"));
-        nameCol.setPrefWidth(200);
-        
-        TableColumn<SubjectModel, Integer> unitsCol = new TableColumn<>("Units");
-        unitsCol.setCellValueFactory(new PropertyValueFactory<>("units"));
-        unitsCol.setPrefWidth(60);
-        
-        TableColumn<SubjectModel, String> deptCol = new TableColumn<>("Department");
-        deptCol.setCellValueFactory(new PropertyValueFactory<>("department"));
-        deptCol.setPrefWidth(100);
-          
-        // Add columns to the table view
-        @SuppressWarnings("unchecked")
-        TableColumn<SubjectModel, ?>[] columns = new TableColumn[] {codeCol, nameCol, unitsCol, deptCol};
-        subjectsTableView.getColumns().addAll(columns);
-        
-        // Add a loading indicator
-        ProgressIndicator progressIndicator = new ProgressIndicator();
-        progressIndicator.setVisible(true);
-        
-        // Add a status label
-        Label statusLabel = new Label("Loading subjects...");
-        
-        // Create a container for the progress indicator
-        HBox loadingBox = new HBox(10, progressIndicator, statusLabel);
-        loadingBox.setAlignment(javafx.geometry.Pos.CENTER);
-        
-        // Add components to the grid
-        grid.add(loadingBox, 0, 0);
-        grid.add(subjectsTableView, 0, 1);
-        
-        dialog.getDialogPane().setContent(grid);
-        
-        // Make API call to get the teacher's subjects
-        String teacherName = teacher.getName();
-        
-        // Log for debugging
-        System.out.println("Getting subjects for teacher: " + teacherName);
-        if (teacher.getAssignedSubjectIds() != null) {
-            System.out.println("Teacher has " + teacher.getAssignedSubjectIds().size() + " subject IDs stored locally");
-        }
-        
-        // Show the dialog before making the API call
-        Platform.runLater(() -> {
-            dialog.show();
-            
-            // Make API call to get subjects for this teacher using the updated endpoint format
-            AuthService.makeGetRequest("/admin/teachers/" + teacherName + "/subjects")
-                .thenAccept(response -> Platform.runLater(() -> {
-                    // Hide loading indicator
-                    loadingBox.setVisible(false);
+        // Make API call to get subjects for this teacher using the updated endpoint format
+        AuthService.makeGetRequest("/admin/teachers/" + teacherName + "/subjects")
+            .thenAccept(response -> Platform.runLater(() -> {
+                // Hide loading indicator
+                loadingBox.setVisible(false);
+                
+                // Debug the response
+                System.out.println("Teacher subjects response: " + response);
+                
+                // Process the response - using the new API format
+                if (response != null && response.has("assignedSubjects") && response.get("assignedSubjects").isJsonArray()) {
+                    JsonArray subjectsArray = response.getAsJsonArray("assignedSubjects");
                     
-                    // Debug the response
-                    System.out.println("Teacher subjects response: " + response);
+                    System.out.println("API returned " + subjectsArray.size() + " subjects for teacher " + teacherName);
                     
-                    // Process the response - using the new API format
-                    if (response != null && response.has("assignedSubjects") && response.get("assignedSubjects").isJsonArray()) {
-                        JsonArray subjectsArray = response.getAsJsonArray("assignedSubjects");
-                        
-                        System.out.println("API returned " + subjectsArray.size() + " subjects for teacher " + teacherName);
-                        
-                        if (subjectsArray.size() == 0) {
-                            statusLabel.setText("No subjects assigned to this teacher.");
-                            statusLabel.setVisible(true);
-                        } else {
-                            // Create an observable list to store the subjects
-                            ObservableList<SubjectModel> subjectsList = FXCollections.observableArrayList();
-                            
-                            // Process each subject in the array with the new format
-                            for (var i = 0; i < subjectsArray.size(); i++) {
-                                try {
-                                    JsonObject subject = subjectsArray.get(i).getAsJsonObject();
-                                    
-                                    // Extract the fields according to the updated API response
-                                    String edpCode = subject.has("edpCode") ? subject.get("edpCode").getAsString() : "";
-                                    String name = subject.has("name") ? subject.get("name").getAsString() : "Unknown Subject";
-                                    int units = subject.has("units") ? subject.get("units").getAsInt() : 0;
-                                    String department = subject.has("department") ? subject.get("department").getAsString() : "";
-                                    
-                                    // Create a subject model and add to the list
-                                    SubjectModel subjectModel = new SubjectModel(
-                                        edpCode,
-                                        name,
-                                        units,
-                                        department,
-                                        new String[0] // No prerequisites information in this view
-                                    );
-                                    
-                                    subjectsList.add(subjectModel);
-                                    System.out.println("Added subject: " + name + " (" + edpCode + ")");
-                                } catch (Exception e) {
-                                    System.err.println("Error processing subject at index " + i + ": " + e.getMessage());
-                                    e.printStackTrace();
-                                }
-                            }
-                            
-                            // Update the table view
-                            subjectsTableView.setItems(subjectsList);
-                        }
+                    if (subjectsArray.size() == 0) {
+                        statusLabel.setText("No subjects assigned to this teacher.");
+                        statusLabel.setVisible(true);
                     } else {
-                        // No data or error from API
-                        statusLabel.setText("No subjects found or error in API response");
-                        statusLabel.setVisible(true);
-                        System.err.println("Invalid response format: missing 'assignedSubjects' array");
-                    }
-                }))
-                .exceptionally(ex -> {
-                    Platform.runLater(() -> {
-                        loadingBox.setVisible(false);
-                        statusLabel.setText("Error: " + ex.getMessage());
-                        statusLabel.setVisible(true);
+                        // Create an observable list to store the subjects
+                        ObservableList<SubjectModel> subjectsList = FXCollections.observableArrayList();
                         
-                        System.err.println("API error when fetching teacher subjects: " + ex.getMessage());
-                        ex.printStackTrace();
-                    });
-                    return null;
+                        // Process each subject in the array with the new format
+                        for (var i = 0; i < subjectsArray.size(); i++) {
+                            try {
+                                JsonObject subject = subjectsArray.get(i).getAsJsonObject();
+                                
+                                // Extract the fields according to the updated API response
+                                String edpCode = subject.has("edpCode") ? subject.get("edpCode").getAsString() : "";
+                                String name = subject.has("name") ? subject.get("name").getAsString() : "Unknown Subject";
+                                int units = subject.has("units") ? subject.get("units").getAsInt() : 0;
+                                String department = subject.has("department") ? subject.get("department").getAsString() : "";
+                                
+                                // Create a subject model and add to the list
+                                SubjectModel subjectModel = new SubjectModel(
+                                    edpCode,
+                                    name,
+                                    units,
+                                    department,
+                                    new String[0] // No prerequisites information in this view
+                                );
+                                
+                                subjectsList.add(subjectModel);
+                                System.out.println("Added subject: " + name + " (" + edpCode + ")");
+                            } catch (Exception e) {
+                                System.err.println("Error processing subject at index " + i + ": " + e.getMessage());
+                                e.printStackTrace();
+                            }
+                        }
+                        
+                        // Update the table view
+                        subjectsTableView.setItems(subjectsList);
+                    }
+                } else {
+                    // No data or error from API
+                    statusLabel.setText("No subjects found or error in API response");
+                    statusLabel.setVisible(true);
+                    System.err.println("Invalid response format: missing 'assignedSubjects' array");
+                }
+            }))
+            .exceptionally(ex -> {
+                Platform.runLater(() -> {
+                    loadingBox.setVisible(false);
+                    statusLabel.setText("Error: " + ex.getMessage());
+                    statusLabel.setVisible(true);
+                    
+                    System.err.println("API error when fetching teacher subjects: " + ex.getMessage());
+                    ex.printStackTrace();
                 });
-        });
-    }
-      // Helper method to reset and set up the context menu
-    private void applyContextMenu(ViewType viewType) {
-        try {
-            System.out.println("Applying context menu for view type: " + viewType);
-            
-            // First clear any existing row factory
-            System.out.println("Clearing existing row factory...");
-            mainTableView.setRowFactory(null);
-            
-            // Apply the appropriate context menu based on view type
-            System.out.println("Setting up context menu based on view type: " + viewType);
-            switch (viewType) {
-                case SUBJECTS:
-                    System.out.println("Applying SetupSubjectContextMenu...");
-                    SetupSubjectContextMenu.apply(this, mainTableView);
-                    break;
-                case TEACHERS:
-                    System.out.println("Applying SetupTeacherContextMenu...");
-                    SetupTeacherContextMenu.apply(this, mainTableView);
-                    break;
-                case STUDENTS:
-                    System.out.println("No context menu for students view yet");
-                    // No context menu for students yet
-                    break;
-            }
-            
-            System.out.println("Context menu successfully applied for " + viewType);
-        } catch (Exception e) {
-            System.err.println("ERROR in applyContextMenu: " + e.getMessage());
-            e.printStackTrace();
-            showError("Error applying context menu: " + e.getMessage());
+                return null;
+            });
+    });
+}
+
+/**
+ * Helper method to reset and set up the context menu
+ * @param viewType The type of view to apply the context menu for
+ */
+private void applyContextMenu(ViewType viewType) {
+    try {
+        System.out.println("Applying context menu for view type: " + viewType);
+        
+        // First clear any existing row factory
+        System.out.println("Clearing existing row factory...");
+        mainTableView.setRowFactory(null);
+        
+        // Apply the appropriate context menu based on view type
+        System.out.println("Setting up context menu based on view type: " + viewType);
+        switch (viewType) {
+            case SUBJECTS:
+                System.out.println("Applying SetupSubjectContextMenu...");
+                SetupSubjectContextMenu.apply(this, mainTableView);
+                break;
+            case TEACHERS:
+                System.out.println("Applying SetupTeacherContextMenu...");
+                SetupTeacherContextMenu.apply(this, mainTableView);
+                break;
+            case STUDENTS:
+                System.out.println("No context menu for students view yet");
+                // No context menu for students yet
+                break;
         }
+        
+        // Verify row factory is set up correctly
+        boolean hasRowFactory = mainTableView.getRowFactory() != null;
+        System.out.println("Row factory successfully applied: " + hasRowFactory);
+        
+        // Debug: Check if context menu will be visible
+        if (mainTableView.getItems() != null && !mainTableView.getItems().isEmpty()) {
+            System.out.println("Table has " + mainTableView.getItems().size() + " items to show context menu on");
+        } else {
+            System.out.println("Table has no items yet, context menu will be applied when items are loaded");
+        }
+        
+        System.out.println("Context menu successfully applied for " + viewType);
+    } catch (Exception e) {
+        System.err.println("ERROR in applyContextMenu: " + e.getMessage());
+        e.printStackTrace();
+        showError("Error applying context menu: " + e.getMessage());
     }
+}
 
     // Fallback method to display teacher's subjects from locally stored IDs
     private void displayAssignedSubjectsFromLocalData(TeacherModel teacher, TableView<SubjectModel> tableView, Label statusLabel) {
@@ -1725,6 +1722,23 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
             currentPage = 0;
             updatePaginationInfo();
             
+            // Clear and reapply context menu to fix right-click issues
+            System.out.println("Reapplying context menu to fix right-click functionality...");
+            mainTableView.setRowFactory(null); // Clear existing row factory
+            applyContextMenu(currentView); // Reapply context menu
+            
+            // Force UI refresh to ensure all components are properly updated
+            System.out.println("Forcing UI refresh...");
+            // This small trick helps refresh the internal state of TableView
+            Object tmp = mainTableView.getSelectionModel().getSelectedItem();
+            mainTableView.setItems(null);
+            mainTableView.layout();
+            mainTableView.setItems(pagedItems);
+            // Restore selection if possible
+            if (tmp != null) {
+                mainTableView.getSelectionModel().select(tmp);
+            }
+            
             // Re-enable refresh button with slight delay for visual feedback
             new Thread(() -> {
                 try {
@@ -1733,6 +1747,13 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
                     Platform.runLater(() -> {
                         refreshButton.setDisable(false);
                         refreshButton.setText("Refresh");
+                        
+                        // Additional debug information after refresh
+                        System.out.println("UI refresh completed:");
+                        System.out.println("  - Current view: " + currentView);
+                        System.out.println("  - Items in table: " + (mainTableView.getItems() != null ? mainTableView.getItems().size() : 0));
+                        System.out.println("  - Context menu attached: " + (mainTableView.getRowFactory() != null));
+                        System.out.println("  - Selected item: " + (mainTableView.getSelectionModel().getSelectedItem() != null));
                     });
                 } catch (InterruptedException e) {
                     Thread.currentThread().interrupt();

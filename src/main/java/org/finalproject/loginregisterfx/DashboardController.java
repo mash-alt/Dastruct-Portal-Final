@@ -22,6 +22,7 @@ import javafx.scene.control.Tooltip;
 import javafx.scene.layout.VBox;
 import javafx.stage.Stage;
 import org.finalproject.loginregisterfx.Service.AuthService;
+import org.finalproject.loginregisterfx.LogoutDialogController;
 
 // Removed unused import: import java.util.HashMap;
 import java.util.Map;
@@ -326,46 +327,35 @@ public class DashboardController {
             e.printStackTrace();
             showError("Navigation error", "Could not navigate to the requested view: " + e.getMessage());
         }
-    }
-      private void handleLogout() {
-        // Create a confirmation dialog
-        Alert confirmDialog = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmDialog.setTitle("Confirm Logout");
-        confirmDialog.setHeaderText("Are you sure you want to log out?");
-        confirmDialog.setContentText("Any unsaved changes will be lost.");
-        
-        // Customize button text
-        ButtonType logoutButton = new ButtonType("Logout", ButtonBar.ButtonData.OK_DONE);
-        ButtonType cancelButton = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
-        confirmDialog.getButtonTypes().setAll(logoutButton, cancelButton);
-        
-        // Show dialog and wait for response
-        confirmDialog.showAndWait().ifPresent(response -> {
-            if (response == logoutButton) {
-                // User confirmed logout, proceed with logout process
-                AuthService.logout().thenAccept(success -> {
-                    Platform.runLater(() -> {
-                        try {
-                            // Return to login screen
-                            Parent loginView = FXMLLoader.load(getClass().getResource("LoginForm.fxml"));
-                            Scene loginScene = new Scene(loginView, 450, 500);
-                            Stage stage = (Stage) logoutBtn.getScene().getWindow();
-                            stage.setScene(loginScene);
-                            stage.setTitle("Login Form");
-                            stage.setResizable(false);
-                            stage.show();
-                            stage.centerOnScreen();
-                        } catch (Exception e) {
-                    showError("Logout error", "Could not return to login screen: " + e.getMessage());
-                    e.printStackTrace();
-                }
-            });
-        }).exceptionally(ex -> {            Platform.runLater(() -> showError("Logout failed", "Could not log out: " + ex.getMessage()));
-            return null;
-                });
-            }
-            // If user clicked Cancel, do nothing and return to the application
-        });
+    }    private void handleLogout() {
+        try {
+            System.out.println("Opening logout confirmation dialog...");
+            
+            // Load the Logout.fxml dialog
+            FXMLLoader loader = new FXMLLoader(getClass().getResource("Logout.fxml"));
+            Parent root = loader.load();
+            
+            // Get the controller and pass the owner stage
+            LogoutDialogController controller = loader.getController();
+            controller.setOwnerStage((Stage) logoutBtn.getScene().getWindow());
+            
+            // Create and configure dialog stage
+            Stage dialogStage = new Stage();
+            dialogStage.setTitle("Logout");
+            dialogStage.initOwner(logoutBtn.getScene().getWindow());
+            dialogStage.initModality(javafx.stage.Modality.WINDOW_MODAL);
+            dialogStage.setScene(new Scene(root));
+            dialogStage.setResizable(false);
+            dialogStage.centerOnScreen();
+            
+            // Show the dialog
+            dialogStage.showAndWait();
+            
+        } catch (Exception e) {
+            System.err.println("Failed to open logout dialog: " + e.getMessage());
+            e.printStackTrace();
+            showError("Logout Error", "Failed to open logout dialog: " + e.getMessage());
+        }
     }
       private void showError(String title, String message) {
         Platform.runLater(() -> {
