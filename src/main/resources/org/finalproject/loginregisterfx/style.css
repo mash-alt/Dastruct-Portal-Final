@@ -505,3 +505,50 @@
 .logout-button:hover {
     -fx-background-color: #c0392b;
 }
+
+/* Common Styles */
+.table-view {
+    -fx-background-color: transparent;
+}
+
+.table-view .column-header-background {
+    -fx-background-color: #f8f9fa;
+    -fx-background-radius: 5 5 0 0;
+}
+
+.table-view .column-header {
+    -fx-background-color: #f8f9fa;
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+    -fx-padding: 10 5;
+    -fx-border-color: transparent transparent #e0e0e0 transparent;
+}
+
+.table-view .table-cell {
+    -fx-padding: 10 5;
+    -fx-border-color: transparent;
+}
+
+.table-view .table-row-cell {
+    -fx-background-color: white;
+    -fx-border-color: transparent transparent #f0f0f0 transparent;
+}
+
+.table-view .table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
+}
+
+.table-view .table-row-cell:hover {
+    -fx-background-color: #e9effd;
+}
+
+.table-view .table-row-cell:selected {
+    -fx-background-color: #dbeafe;
+}
+
+.button:hover {
+    -fx-background-color: #516395 !important;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 0);
+}
+
+
