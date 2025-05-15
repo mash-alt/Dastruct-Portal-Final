@@ -18,7 +18,8 @@ public class EnrolledStudentsBySubjectModel {
     /**
      * Constructor that initializes the model from a JsonObject
      */
-    public EnrolledStudentsBySubjectModel(JsonObject json) {        this.subjectId = json.has("_id") ? json.get("_id").getAsString() : "";
+    public EnrolledStudentsBySubjectModel(JsonObject json) {        
+        this.subjectId = json.has("_id") ? json.get("_id").getAsString() : "";
         this.subjectCode = json.has("edpCode") ? json.get("edpCode").getAsString() : 
                            (json.has("subjectCode") ? json.get("subjectCode").getAsString() : "");
         this.subjectName = json.has("name") ? json.get("name").getAsString() : 

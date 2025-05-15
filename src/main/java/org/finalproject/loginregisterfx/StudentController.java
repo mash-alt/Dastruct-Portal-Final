@@ -21,6 +21,7 @@ import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
+import javafx.beans.property.SimpleStringProperty;
 import org.finalproject.loginregisterfx.models.StudentModel;
 import org.finalproject.loginregisterfx.models.SubjectModel;
 import org.finalproject.loginregisterfx.models.EnrolledSubjectModel;
@@ -205,7 +206,33 @@ public class StudentController {
             subjectNameCol.setCellValueFactory(cellData -> cellData.getValue().subjectNameProperty());
             subjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
             scheduleCol.setCellValueFactory(cellData -> cellData.getValue().scheduleProperty());
-            instructorCol.setCellValueFactory(cellData -> cellData.getValue().instructorProperty());
+            
+            // Enhanced instructor cell factory with formatting logic
+            instructorCol.setCellValueFactory(cellData -> {
+                String instructorName = cellData.getValue().getInstructor();
+                // Ensure instructor name is displayed properly
+                if (instructorName == null || instructorName.trim().isEmpty() || 
+                    instructorName.equals("null") || instructorName.equalsIgnoreCase("undefined")) {
+                    return new SimpleStringProperty("Not Assigned");
+                }
+                // Check if it needs to be capitalized or formatted
+                if (instructorName.equals(instructorName.toLowerCase()) || instructorName.equals(instructorName.toUpperCase())) {
+                    // Convert JOHN DOE or john doe to John Doe
+                    String[] nameParts = instructorName.split(" ");
+                    StringBuilder formattedName = new StringBuilder();
+                    for (String part : nameParts) {
+                        if (part.length() > 0) {
+                            formattedName.append(part.substring(0, 1).toUpperCase());
+                            if (part.length() > 1) {
+                                formattedName.append(part.substring(1).toLowerCase());
+                            }
+                            formattedName.append(" ");
+                        }
+                    }
+                    return new SimpleStringProperty(formattedName.toString().trim());
+                }
+                return new SimpleStringProperty(instructorName);
+            });
             
             // Apply column styling for visibility
             String columnStyle = "-fx-alignment: CENTER-LEFT; -fx-text-fill: #333333;";
@@ -360,18 +387,27 @@ public class StudentController {
             System.out.println("All essential FXML elements are successfully loaded");
         }
     }
-    
-    /**
+      /**
      * Initialize student data from login response
      * @param userData JsonObject containing student data from API
      */    public void initializeStudentData(JsonObject userData) {
         try {
             // Create StudentModel from the response
             System.out.println("Initializing student data from: " + (userData != null ? userData.toString() : "null JSON"));
-              // Check for academic history and enrolled subjects
-            if (userData != null) {
-                if (userData.has("academicHistory")) {
-                    JsonArray academicHistory = userData.getAsJsonArray("academicHistory");
+            
+            // Extract actual user data - the API now returns user data nested in a "user" object
+            JsonObject actualUserData = userData;
+            if (userData != null && userData.has("user") && userData.get("user").isJsonObject()) {
+                System.out.println("Found user object in response, extracting student data");
+                actualUserData = userData.getAsJsonObject("user");
+            }
+              
+            // Check for academic history and enrolled subjects
+            if (actualUserData != null) {
+                System.out.println("Processing student data: " + actualUserData);
+                
+                if (actualUserData.has("academicHistory")) {
+                    JsonArray academicHistory = actualUserData.getAsJsonArray("academicHistory");
                     System.out.println("Found academic history with " + academicHistory.size() + " terms");
                     
                     if (academicHistory.size() > 0 && academicHistory.get(0).isJsonObject()) {
@@ -400,19 +436,26 @@ public class StudentController {
                             }
                         }
                     }
+                } else {
+                    System.out.println("No academic history found in student data");
                 }
                 
-                if (userData.has("enrolledSubjects")) {
+                if (actualUserData.has("enrolledSubjects")) {
                     System.out.println("Found enrolledSubjects list with " + 
-                        userData.getAsJsonArray("enrolledSubjects").size() + " subject IDs");
+                        actualUserData.getAsJsonArray("enrolledSubjects").size() + " subject IDs");
                 }
             }
             
-            // Create the student model
-            this.studentData = new StudentModel(userData);
+            // Create the student model from the actual user data
+            this.studentData = new StudentModel(actualUserData);
+              // Extract the actual user data if needed before saving to session
+            JsonObject dataToSave = userData;
+            if (userData != null && userData.has("user") && userData.get("user").isJsonObject()) {
+                dataToSave = userData.getAsJsonObject("user");
+            }
             
             // Save student in session for persistence
-            SessionManager.getInstance().updateStudentData(userData);
+            SessionManager.getInstance().updateStudentData(dataToSave);
             
             // Make sure UI updates happen on JavaFX thread
             javafx.application.Platform.runLater(() -> {
@@ -828,9 +871,9 @@ public void handleStartEnrollment() {
     Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
     confirmAlert.setTitle("Confirm Enrollment");
     confirmAlert.setHeaderText("Start Enrollment Process");
-    confirmAlert.setContentText("Are you sure you want to begin the enrollment process for the " + 
-                               academicYear + " school year?\n\n" +
-                               "This will register you for classes based on your program requirements.");
+    confirmAlert.setContentText("Are you sure you want to begin the enrollment process for the " +
+            academicYear + " school year?\n\n" +
+            "This will register you for classes based on your program requirements.");
 
     confirmAlert.showAndWait().ifPresent(response -> {
         if (response == javafx.scene.control.ButtonType.OK) {
@@ -841,28 +884,49 @@ public void handleStartEnrollment() {
 
                 // Disable start button
                 startEnrollmentBtn.setDisable(true);
-                startEnrollmentBtn.setText("Enrollment in Progress...");                // Get session manager and current student ID 
+                startEnrollmentBtn.setText("Enrollment in Progress...");
+
+                // Get session manager and current student ID
                 // Make sure to use the studentId field (ucb-XXXXX) instead of the MongoDB _id field
                 String studentId = studentData.getStudentId();
-                
-                System.out.println("Student ID for enrollment: " + studentId + ", format format: ucb-XXXXX");
-                // Ensure the student ID has the proper format
+
+                System.out.println("Student ID for enrollment (original): " + studentId);
+
+                // Ensure the student ID has the proper format - the backend expects ucb-XXXXX
                 if (studentId != null && !studentId.startsWith("ucb-")) {
                     studentId = "ucb-" + studentId;
                     System.out.println("Added ucb- prefix to student ID: " + studentId);
+                } else {
+                    System.out.println("Student ID already has correct format: " + studentId);
+                }
+
+                // Verify the studentId is valid and well-formed
+                if (studentId == null || studentId.trim().isEmpty() || !studentId.matches("ucb-\\d+")) {
+                    System.err.println("ERROR: Invalid student ID format: " + studentId);
+                    showAlert(Alert.AlertType.ERROR, "Invalid Student ID",
+                            "Your student ID appears to be invalid or missing. Please contact IT support.");
+                    return;
                 }
 
                 // Show processing indicator
-                showAlert(Alert.AlertType.INFORMATION, "Processing", 
-                    "Your enrollment request is being processed. This may take a moment...");                // Make the API call using EnrollmentService - using the current semester
-                System.out.println("Making enrollment API call with studentId: " + studentId);
-                System.out.println("Current auth token: " + org.finalproject.loginregisterfx.Service.AuthService.getAuthToken());
-                
+                showAlert(Alert.AlertType.INFORMATION, "Processing",
+                        "Your enrollment request is being processed. This may take a moment...");
+
+                // Debug logging to confirm the values being sent
+                System.out.println("ENROLLMENT REQUEST DETAILS:");
+                System.out.println("- Student ID: " + studentId);
+                System.out.println("- Academic Year: " + academicYear);
+                System.out.println("- Semester: First");
+                System.out.println("- Auth token length: " +
+                        (org.finalproject.loginregisterfx.Service.AuthService.getAuthToken() != null ?
+                                org.finalproject.loginregisterfx.Service.AuthService.getAuthToken().length() : "null"));
+
                 org.finalproject.loginregisterfx.Service.EnrollmentService.enrollStudent(
                         studentId, null, academicYear, "First"
                 ).thenAccept(response2 -> {
                     // Update on JavaFX application thread
-                    javafx.application.Platform.runLater(() -> {                // Check if enrollment was successful (response has a message and no error field)
+                    javafx.application.Platform.runLater(() -> {
+                        // Check if enrollment was successful (response has a message and no error field)
                         if (response2.has("message") && !response2.has("error")) {
                             // Update student model
                             studentData.setEnrolled(true);
@@ -874,7 +938,7 @@ public void handleStartEnrollment() {
                                 if (studentObj.has("isEnrolled")) {
                                     studentData.setEnrolled(studentObj.get("isEnrolled").getAsBoolean());
                                 }
-                                
+
                                 // Print received student data for debugging
                                 System.out.println("Received student data from successful enrollment response: " + studentObj.toString());
                             }
@@ -883,7 +947,7 @@ public void handleStartEnrollment() {
                             org.finalproject.loginregisterfx.Service.SessionManager.getInstance().updateEnrollmentStatus(true);
 
                             // Refresh student data from the server to get enrolled subjects
-                            refreshStudentData();
+                            refreshStudentProfile();
 
                             // Update UI to reflect enrollment status
                             updateEnrollmentStatus();
@@ -892,18 +956,18 @@ public void handleStartEnrollment() {
                             showEnrollmentSuccessDialog();
                         } else {
                             // Show error message with details and suggestions
-                            String errorMessage = response2.has("error") ? 
-                                response2.get("error").getAsString() : "An unknown error occurred";
+                            String errorMessage = response2.has("error") ?
+                                    response2.get("error").getAsString() : "An unknown error occurred";
 
                             Alert errorAlert = new Alert(Alert.AlertType.ERROR);
                             errorAlert.setTitle("Enrollment Failed");
                             errorAlert.setHeaderText("Could not complete enrollment");
                             errorAlert.setContentText(errorMessage + "\n\n" +
-                                "Possible reasons:\n" +
-                                "- You may have outstanding requirements\n" +
-                                "- There might be a problem with course availability\n" +
-                                "- System connectivity issues\n\n" +
-                                "Please contact the registrar's office for assistance.");
+                                    "Possible reasons:\n" +
+                                    "- You may have outstanding requirements\n" +
+                                    "- There might be a problem with course availability\n" +
+                                    "- System connectivity issues\n\n" +
+                                    "Please contact the registrar's office for assistance.");
                             errorAlert.showAndWait();
 
                             // Reset UI
@@ -913,25 +977,26 @@ public void handleStartEnrollment() {
                             startEnrollmentBtn.setText("Start Enrollment Process");
                         }
                     });
-                })                                .exceptionally(ex -> {
-                            // Handle exceptions with more detailed information
-                            javafx.application.Platform.runLater(() -> {
-                                String errorMessage = ex.getMessage();
-                                System.err.println("Enrollment error: " + errorMessage);
-                                
-                                // Check if it's a connection error
-                                boolean isConnectionError = errorMessage != null && 
-                                    (errorMessage.contains("Connection refused") || 
-                                     errorMessage.contains("connect timed out") ||
-                                     errorMessage.contains("Unable to connect"));
-                                
-                                if (isConnectionError) {
-                                    showAlert(Alert.AlertType.ERROR, "Connection Error", 
-                                        "Could not connect to the enrollment server. Please check your internet connection and try again.");
-                                } else {
-                                    showAlert(Alert.AlertType.ERROR, "Enrollment Error",
-                                "Could not complete enrollment: " + errorMessage);
+                }).exceptionally(ex -> {
+                    // Handle exceptions with more detailed information
+                    javafx.application.Platform.runLater(() -> {
+                        String errorMessage = ex.getMessage();
+                        System.err.println("Enrollment error: " + errorMessage);
+
+                        // Check if it's a connection error
+                        boolean isConnectionError = errorMessage != null &&
+                                (errorMessage.contains("Connection refused") ||
+                                        errorMessage.contains("connect timed out") ||
+                                        errorMessage.contains("Unable to connect"));
+
+                        if (isConnectionError) {
+                            showAlert(Alert.AlertType.ERROR, "Connection Error",
+                                    "Could not connect to the enrollment server.");
+                        } else {
+                            showAlert(Alert.AlertType.ERROR, "Enrollment Error",
+                                    "Could not complete enrollment: " + errorMessage);
                         }
+
                         // Reset UI
                         enrollmentStatusLabel.setText("Status: Not Enrolled");
                         enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
@@ -940,7 +1005,6 @@ public void handleStartEnrollment() {
                     });
                     return null;
                 });
-
             } catch (Exception e) {
                 e.printStackTrace();
                 showAlert(Alert.AlertType.ERROR, "Error", "Could not start enrollment process: " + e.getMessage());
@@ -954,9 +1018,6 @@ public void handleStartEnrollment() {
         }
     });
 }
-    /**
-     * Shows a success dialog after enrollment with an option to view subjects
-     */
 private void showEnrollmentSuccessDialog() {
     Alert alert = new Alert(Alert.AlertType.INFORMATION);
     alert.setTitle("Enrollment Approved");
@@ -1111,8 +1172,7 @@ private void showEnrollmentSuccessDialog() {
                             // Handle exceptions
                             javafx.application.Platform.runLater(() -> {
                                 showAlert(Alert.AlertType.ERROR, "Connection Error", 
-                                    "Could not complete next year enrollment: " + ex.getMessage() + 
-                                    "\n\nPlease check your internet connection and try again.");
+                                    "Could not complete next year enrollment: " + ex.getMessage());
                                 
                                 // Reset button
                                 nextYearEnrollmentBtn.setDisable(false);
@@ -1151,7 +1211,9 @@ private void showEnrollmentSuccessDialog() {
             // Switch back to enrollment tab
             switchToEnrollment();
             return;
-        }        // Set school year
+        }        
+        
+        // Set school year
         if (schoolYearLabel != null) {
             java.time.LocalDate now = java.time.LocalDate.now();
             int currentYear = now.getYear();
@@ -1159,26 +1221,124 @@ private void showEnrollmentSuccessDialog() {
             schoolYearLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333333;"); // Ensure visible text
         } else {
             System.err.println("ERROR: schoolYearLabel is null");
-        }// Load enrolled subjects from API
-        // Use studentId field (ucb-XXXXX) instead of MongoDB _id field
+        }
+        
+        // Clear previous data
+        enrolledSubjectsData.clear();
+
+        // First, try to use data from the student's academic history (similar to loadGrades method)
+        StudentModel.AcademicTerm currentTerm = studentData.getCurrentAcademicTerm();
+        
+        if (currentTerm != null && currentTerm.getSubjects() != null && !currentTerm.getSubjects().isEmpty()) {
+            System.out.println("Loading enrolled subjects from academic history. Found " + 
+                currentTerm.getSubjects().size() + " subjects.");
+            
+            int totalUnits = 0;
+            
+            // Convert academic history subjects to EnrolledSubjectModel
+            for (StudentModel.SubjectGrade subjectGrade : currentTerm.getSubjects()) {
+                // Create EnrolledSubjectModel directly from SubjectGrade
+                EnrolledSubjectModel enrolledSubject = new EnrolledSubjectModel(
+                    subjectGrade.getEdpCode(),
+                    subjectGrade.getSubjectName(),
+                    subjectGrade.getUnits(),
+                    "TBA", // Schedule not available in academic history
+                    "TBA", // Instructor not available in academic history
+                    subjectGrade.getSubjectId(),
+                    subjectGrade.getMidtermGradeFormatted(),
+                    subjectGrade.getFinalGradeFormatted()
+                );
+                
+                // Add to the observable list
+                enrolledSubjectsData.add(enrolledSubject);
+                
+                // Add to total units
+                totalUnits += subjectGrade.getUnits();
+            }
+            
+            // Set the table items
+            subjectsTable.setItems(enrolledSubjectsData);
+            
+            // Always update cell value factories to ensure proper formatting
+            subjectCodeCol.setCellValueFactory(cellData -> cellData.getValue().subjectCodeProperty());
+            subjectNameCol.setCellValueFactory(cellData -> cellData.getValue().subjectNameProperty());
+            subjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
+            scheduleCol.setCellValueFactory(cellData -> cellData.getValue().scheduleProperty());
+            
+            // Special handling for instructor column
+            instructorCol.setCellValueFactory(cellData -> {
+                String name = cellData.getValue().getInstructor();
+                // Ensure instructor name is displayed properly
+                if (name == null || name.trim().isEmpty() || 
+                    name.equals("null") || name.equalsIgnoreCase("undefined")) {
+                    return new SimpleStringProperty("Not Assigned");
+                }
+                return new SimpleStringProperty(name);
+            });
+            
+            instructorCol.setVisible(true);
+            
+            // Update count and total units labels
+            if (subjectsEnrolledValue != null) {
+                subjectsEnrolledValue.setText(String.valueOf(currentTerm.getSubjects().size()));
+                subjectsEnrolledValue.setStyle("-fx-text-fill: #333333;"); // Ensure visible text
+            }
+            
+            if (totalUnitsLabel != null) {
+                totalUnitsLabel.setText(String.valueOf(totalUnits));
+                totalUnitsLabel.setStyle("-fx-text-fill: #333333;"); // Ensure visible text
+            }
+            
+            return;
+        }
+    
+        // If no data in academic history, load from API
         String studentId = studentData.getStudentId();
         System.out.println("Loading enrolled subjects for student ID: " + studentId);
-        
-        EnrollmentService.getEnrolledSubjects(studentId)
+          EnrollmentService.getEnrolledSubjects(studentId)
             .thenAccept(response -> {
                 javafx.application.Platform.runLater(() -> {
                     try {
-                        if (response != null && response.has("studyLoad") && response.get("studyLoad").isJsonArray()) {
-                            System.out.println("Received subjects response successfully");
-                            // Process the enrolled subjects
-                            processEnrolledSubjects(response.getAsJsonArray("studyLoad"));
-                        } else {
-                            System.err.println("Invalid response format or empty subjects array");
-                            if (response != null) {
-                                System.err.println("Response: " + response.toString());
-                            }
-                            showAlert(Alert.AlertType.WARNING, "No Data", 
-                                "No enrolled subjects found. Please check your enrollment status.");
+                        // Debug the full response to see its structure
+                        System.out.println("Full study load response: " + response.toString());
+                
+                // The backend can return different structures, handle all possible formats
+                if (response != null && response.has("studyLoad") && response.get("studyLoad").isJsonArray()) {
+                    // Format: { studyLoad: [...] }
+                    System.out.println("Received subjects response with direct studyLoad array");
+                    processEnrolledSubjects(response.getAsJsonArray("studyLoad"));
+                } 
+                // Format: { data: { studyLoad: [...] } }
+                else if (response != null && response.has("data") && 
+                         response.get("data").isJsonObject() && 
+                         response.getAsJsonObject("data").has("studyLoad") && 
+                         response.getAsJsonObject("data").get("studyLoad").isJsonArray()) {
+                    System.out.println("Found studyLoad in nested data object");
+                    processEnrolledSubjects(response.getAsJsonObject("data").getAsJsonArray("studyLoad"));
+                }
+                // Format: { message: "...", student: {...}, studyLoad: [...] }
+                else if (response != null && response.has("message") && response.has("studyLoad") && 
+                         response.get("studyLoad").isJsonArray()) {
+                    System.out.println("Found studyLoad array with message");
+                    processEnrolledSubjects(response.getAsJsonArray("studyLoad"));
+                    
+                    // If there's updated student data, update student model
+                    if (response.has("student") && response.get("student").isJsonObject()) {
+                        JsonObject studentObj = response.getAsJsonObject("student");
+                        SessionManager.getInstance().updateStudentData(studentObj);
+                        // Update student data model
+                        studentData = new StudentModel(studentObj);
+                        // Update UI
+                        updateStudentInfo();
+                    }
+                }
+                else {
+                    System.err.println("Invalid response format or empty subjects array");
+                    if (response != null) {
+                        System.err.println("Response: " + response.toString());
+                    }
+                    showAlert(Alert.AlertType.WARNING, "No Data", 
+                        "No enrolled subjects found. Please check your enrollment status.");
                         }
                     } catch (Exception e) {
                         e.printStackTrace();
@@ -1210,23 +1370,69 @@ private void showEnrollmentSuccessDialog() {
         
         System.out.println("Processing " + count + " enrolled subjects");
         
-        for (int i = 0; i < subjectsArray.size(); i++) {
+        for (int i = 0; i < subjectsArray.size(); i++) {            
             try {
                 com.google.gson.JsonObject subjectJson = subjectsArray.get(i).getAsJsonObject();
+                
+                // Debug the raw JSON for this subject
+                System.out.println("Processing subject: " + subjectJson);
                 
                 // Create a SubjectModel first
                 SubjectModel subjectModel = new SubjectModel(
                     subjectJson.has("edpCode") ? subjectJson.get("edpCode").getAsString() : "N/A",
-                    subjectJson.has("subjectName") ? subjectJson.get("subjectName").getAsString() : "Unknown Subject",
+                    subjectJson.has("name") && !subjectJson.get("name").isJsonNull() ? 
+                        subjectJson.get("name").getAsString() : 
+                        (subjectJson.has("subjectName") ? subjectJson.get("subjectName").getAsString() : "Unknown Subject"),
                     subjectJson.has("units") ? subjectJson.get("units").getAsInt() : 0,
                     subjectJson.has("department") ? subjectJson.get("department").getAsString() : "",
                     new String[0]  // No prerequisites needed for display
                 );
+                  // Set teacher if available - handle all possible formats from the API
+                String instructorName = "Not Assigned";
                 
-                // Set teacher if available
-                if (subjectJson.has("instructor")) {
-                    subjectModel.setTeacherAssigned(subjectJson.get("instructor").getAsString());
+                // First check for teacherName field (string) from the updated backend
+                if (subjectJson.has("teacherName") && !subjectJson.get("teacherName").isJsonNull()) {
+                    instructorName = subjectJson.get("teacherName").getAsString();
+                    System.out.println("Setting teacher from teacherName: " + instructorName);
+                } 
+                // Check for teacherFullName field (another possible format)
+                else if (subjectJson.has("teacherFullName") && !subjectJson.get("teacherFullName").isJsonNull()) {
+                    instructorName = subjectJson.get("teacherFullName").getAsString();
+                    System.out.println("Setting teacher from teacherFullName: " + instructorName);
                 }
+                // Check for instructor object with different name properties
+                else if (subjectJson.has("instructor") && !subjectJson.get("instructor").isJsonNull()) {
+                    if (subjectJson.get("instructor").isJsonObject()) {
+                        JsonObject instructor = subjectJson.get("instructor").getAsJsonObject();
+                        
+                        // Try fullName first
+                        if (instructor.has("fullName") && !instructor.get("fullName").isJsonNull()) {
+                            instructorName = instructor.get("fullName").getAsString();
+                            System.out.println("Setting teacher from instructor.fullName: " + instructorName);
+                        }
+                        // Try name property
+                        else if (instructor.has("name") && !instructor.get("name").isJsonNull()) {
+                            instructorName = instructor.get("name").getAsString();
+                            System.out.println("Setting teacher from instructor.name: " + instructorName);
+                        }
+                        // Try firstName + lastName combination
+                        else if (instructor.has("firstName") && !instructor.get("firstName").isJsonNull() &&
+                                 instructor.has("lastName") && !instructor.get("lastName").isJsonNull()) {
+                            String firstName = instructor.get("firstName").getAsString();
+                            String lastName = instructor.get("lastName").getAsString();
+                            instructorName = firstName + " " + lastName;
+                            System.out.println("Setting teacher from instructor.firstName + lastName: " + instructorName);
+                        }
+                    } else if (subjectJson.get("instructor").isJsonPrimitive()) {
+                        // Handle case where instructor might be a direct string value
+                        instructorName = subjectJson.get("instructor").getAsString();
+                        System.out.println("Setting teacher from instructor string: " + instructorName);
+                    }
+                }
+                
+                // Set the teacher name in the model
+                subjectModel.setTeacherAssigned(instructorName);
+                System.out.println("Final instructor name set: " + instructorName);
                 
                 // Create EnrolledSubjectModel from SubjectModel
                 EnrolledSubjectModel enrolledSubject = new EnrolledSubjectModel(subjectModel);
@@ -1248,18 +1454,31 @@ private void showEnrollmentSuccessDialog() {
                 e.printStackTrace();
             }
         }
-        
+          
         // Set the table items
         subjectsTable.setItems(enrolledSubjectsData);
         
-        // Set up cell value factories if not already set
-        if (subjectCodeCol.getCellValueFactory() == null) {
-            subjectCodeCol.setCellValueFactory(cellData -> cellData.getValue().subjectCodeProperty());
-            subjectNameCol.setCellValueFactory(cellData -> cellData.getValue().subjectNameProperty());
-            subjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
-            scheduleCol.setCellValueFactory(cellData -> cellData.getValue().scheduleProperty());
-            instructorCol.setCellValueFactory(cellData -> cellData.getValue().instructorProperty());
-        }        // Update count and total units labels
+        // Always update cell value factories to ensure proper formatting
+        subjectCodeCol.setCellValueFactory(cellData -> cellData.getValue().subjectCodeProperty());
+        subjectNameCol.setCellValueFactory(cellData -> cellData.getValue().subjectNameProperty());
+        subjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
+        scheduleCol.setCellValueFactory(cellData -> cellData.getValue().scheduleProperty());
+        
+        // Special handling for instructor column to format it nicely
+        instructorCol.setCellValueFactory(cellData -> {
+            String name = cellData.getValue().getInstructor();
+            // Ensure instructor name is displayed properly
+            if (name == null || name.trim().isEmpty() || 
+                name.equals("null") || name.equalsIgnoreCase("undefined")) {
+                return new SimpleStringProperty("Not Assigned");
+            }
+            return new SimpleStringProperty(name);
+        });
+        
+        // Make sure instructor column is visible
+        instructorCol.setVisible(true);
+        
+        // Update count and total units labels
         if (subjectsEnrolledValue != null) {
             subjectsEnrolledValue.setText(String.valueOf(count));
             subjectsEnrolledValue.setStyle("-fx-text-fill: #333333;"); // Ensure visible text
@@ -1270,132 +1489,10 @@ private void showEnrollmentSuccessDialog() {
             totalUnitsLabel.setStyle("-fx-text-fill: #333333;"); // Ensure visible text
         }
     }
-    
-    /**
+      /**
      * Refresh student data from the backend API
      * This can be called after enrollment or any other action that might change student data
      */
-    public void refreshStudentData() {        // Check if we have valid student data with ID
-        if (studentData == null || studentData.getStudentId() == null || studentData.getStudentId().isEmpty()) {
-            System.err.println("Cannot refresh student data: Invalid student ID");
-            return;
-        }
-        
-        String studentId = studentData.getStudentId();
-        System.out.println("Refreshing student data for ID: " + studentId);
-        
-        // Show loading indicator
-        showAlert(Alert.AlertType.INFORMATION, "Refreshing Data", "Loading your latest information...");
-        
-        // Call the API to get updated student data
-        AuthService.getStudentProfile(studentId)
-            .thenAccept(response -> {
-                Platform.runLater(() -> {
-                    try {
-                        if (response != null && response.has("student")) {
-                            // Update student model with fresh data
-                            JsonObject studentJson = response.getAsJsonObject("student");
-                            studentData = new StudentModel(studentJson);
-                            
-                            // Save updated data in session
-                            SessionManager.getInstance().updateStudentData(studentJson);                            
-                            // Update UI with refreshed data
-                            updateStudentInfo();
-                              // Also refresh study load if we're on the study load tab
-                            if (studyLoadContent.isVisible()) {
-                                refreshStudyLoadData(studentData.getStudentId());
-                            }
-                            
-                            System.out.println("Student data refreshed successfully");
-                        } else {
-                            System.err.println("Failed to refresh student data - Invalid response");
-                            showAlert(Alert.AlertType.ERROR, "Refresh Failed", 
-                                "Could not refresh your profile data. Please try again later.");
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error refreshing student data: " + e.getMessage());
-                        e.printStackTrace();
-                        showAlert(Alert.AlertType.ERROR, "Error", 
-                            "An error occurred while refreshing your data: " + e.getMessage());
-                    }
-                });
-            })
-            .exceptionally(ex -> {
-                Platform.runLater(() -> {
-                    System.err.println("Exception refreshing student data: " + ex.getMessage());
-                    ex.printStackTrace();
-                    showAlert(Alert.AlertType.ERROR, "Connection Error", 
-                        "Could not connect to the server to refresh your data. Please check your connection.");
-                });
-                return null;
-            });
-    }
-    
-    /**
-     * Refresh study load data from the API
-     * 
-     * @param studentId The student ID to refresh data for
-     */
-    private void refreshStudyLoadData(String studentId) {
-        if (studentId == null || studentId.isEmpty()) {
-            System.err.println("Cannot refresh study load: Invalid student ID");
-            return;
-        }
-        
-        System.out.println("Refreshing study load data for student ID: " + studentId);
-        
-        // Call the new study load API endpoint
-        AuthService.getStudentStudyLoad(studentId)
-            .thenAccept(response -> {
-                Platform.runLater(() -> {
-                    try {
-                        if (response != null && response.has("studyLoad") && response.get("studyLoad").isJsonArray()) {
-                            JsonArray subjectsArray = response.getAsJsonArray("studyLoad");
-                            
-                            // Update enrolled subjects in student model
-                            studentData.clearEnrolledSubjects();
-                            
-                            // Add each subject to the student model
-                            for (JsonElement element : subjectsArray) {
-                                if (element.isJsonObject()) {
-                                    JsonObject subjectObj = element.getAsJsonObject();
-                                    SubjectModel subject = new SubjectModel(subjectObj);
-                                    studentData.enrollSubject(subject);
-                                }
-                            }
-                            
-                            // Update study load view if it's currently displayed
-                            if (studyLoadContent.isVisible()) {
-                                System.out.println("Updating study load view with " + 
-                                                  studentData.getEnrolledSubjects().size() + " subjects");
-                                // Reload enrolled subjects in the UI
-                                loadEnrolledSubjects();
-                            }
-                            
-                            System.out.println("Study load data refreshed successfully");
-                        } else {
-                            System.err.println("Failed to refresh study load - Invalid response format");
-                            // Try fallback to old endpoint
-                            EnrollmentService.getEnrolledSubjects(studentId)
-                                .thenAccept(fallbackResponse -> {
-                                    if (fallbackResponse != null && fallbackResponse.has("subjects")) {
-                                        // Handle fallback response (similar to above)
-                                        System.out.println("Using fallback endpoint for study load");
-                                    }
-                                });
-                        }
-                    } catch (Exception e) {
-                        System.err.println("Error refreshing study load: " + e.getMessage());
-                        e.printStackTrace();
-                    }
-                });
-            })
-            .exceptionally(ex -> {
-                System.err.println("Failed to refresh study load: " + ex.getMessage());
-                ex.printStackTrace();
-                return null;
-            });
-    }
     
     /**
      * Handle print study load button click
@@ -1414,11 +1511,11 @@ private void showEnrollmentSuccessDialog() {
         showAlert(Alert.AlertType.INFORMATION, "Export Function", 
             "Export to PDF functionality will be implemented in a future update.");
     }
-    
-    /**
+      /**
      * Handle refresh study load button click
      * This method is called when the user clicks the Refresh Study Load button
-     */    @FXML
+     */    
+    @FXML
     public void handleRefreshStudyLoad() {
         if (studentData == null || studentData.getStudentId() == null) {
             showAlert(Alert.AlertType.ERROR, "Error", 
@@ -1429,7 +1526,45 @@ private void showEnrollmentSuccessDialog() {
         // Show loading indicator
         showAlert(Alert.AlertType.INFORMATION, "Refreshing Data", "Loading your latest study load information...");
         
-        // Call the method to refresh the study load data        refreshStudyLoadData(studentData.getStudentId());
+        // Refresh from API first to get latest data, then reload the UI
+        String studentId = studentData.getStudentId();
+        System.out.println("Refreshing study load data for student ID: " + studentId);
+        
+        // First refresh student profile data to potentially update academic history
+        AuthService.getStudentProfile(studentId)
+            .thenAccept(response -> {
+                Platform.runLater(() -> {
+                    if (response != null) {
+                        System.out.println("Updated student profile data received");
+                        
+                        // Extract student data
+                        JsonObject studentJson = null;
+                        if (response.has("student")) {
+                            studentJson = response.getAsJsonObject("student");
+                        } else {
+                            // If the student data is at the root level
+                            studentJson = response;
+                        }
+                        
+                        if (studentJson != null) {
+                            // Update student model with fresh data
+                            studentData = new StudentModel(studentJson);
+                            SessionManager.getInstance().updateStudentData(studentJson);
+                        }
+                    }
+                    
+                    // Now load enrolled subjects (will use academic history if available)
+                    loadEnrolledSubjects();
+                });
+            })
+            .exceptionally(ex -> {
+                Platform.runLater(() -> {
+                    System.err.println("Error refreshing profile: " + ex.getMessage());
+                    // Fall back to just loading enrolled subjects directly
+                    loadEnrolledSubjects();
+                });
+                return null;
+            });
     }
 
     /**

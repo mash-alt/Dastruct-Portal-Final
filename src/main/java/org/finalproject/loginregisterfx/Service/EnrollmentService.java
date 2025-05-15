@@ -43,9 +43,13 @@ public class EnrollmentService {    // Use the same base URL and methods from Au
                                                              List<String> subjectIds, 
                                                              String academicYear, 
                                                              String semester) {
+        // The endpoint based on the backend route structure
         String endpoint = "/student/enroll";
         
+        // Create the request body with required fields based on backend implementation
         Map<String, Object> requestData = new HashMap<>();
+        // This is critical - the studentId must be included in the request body
+        // The backend validates this field in req.body.studentId
         requestData.put("studentId", studentId);
         
         // Add optional parameters only if they're provided
@@ -60,14 +64,17 @@ public class EnrollmentService {    // Use the same base URL and methods from Au
         if (semester != null && !semester.isEmpty()) {
             requestData.put("semester", semester);
         }
-          // Log the enrollment request for debugging
-        System.out.println("Sending enrollment request to: " + endpoint);
-        System.out.println("Request data: " + requestData.toString());
-        System.out.println("Auth token present: " + (AuthService.getAuthToken() != null && !AuthService.getAuthToken().isEmpty()));
-        System.out.println("Full URL will be: " + "http://localhost:5050/api" + endpoint);
+        // Log the enrollment request for debugging - enhanced for troubleshooting
+        System.out.println("============ ENROLLMENT REQUEST ============");
+        System.out.println("Endpoint: " + endpoint);
+        System.out.println("Student ID: " + studentId);
+        System.out.println("Full studentId format: " + studentId);  // Verify format (should be ucb-XXXXX)
+        System.out.println("Request data: " + requestData);
+        System.out.println("Auth token: " + (AuthService.getAuthToken() != null ? "Present (length: " + AuthService.getAuthToken().length() + ")" : "Missing"));
+        System.out.println("Full URL: " + "http://localhost:5050/api" + endpoint);
+        System.out.println("============================================");
         
-        // Try a different endpoint format (this might be what the backend expects)
-        // Some APIs need /api prefix, while others already include it in the BASE_URL
+        // Make the API call with the properly formatted request body
         return AuthService.makePostRequest(endpoint, requestData);
     }
     

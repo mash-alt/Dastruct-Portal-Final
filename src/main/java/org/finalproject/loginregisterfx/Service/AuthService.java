@@ -8,7 +8,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
-public class AuthService {    //private static final String BASE_URL = "https://sturdy-space-pancake-v6wj54rgr57726xjr-5050.app.github.dev/api"; 
+public class AuthService {    
+    //private static final String BASE_URL = "https://sturdy-space-pancake-v6wj54rgr57726xjr-5050.app.github.dev/api"; 
     // Change to your actual API URL
     private static final String BASE_URL = "http://localhost:5050/api";  // Removed /api suffix since endpoints already include it
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
@@ -49,18 +50,26 @@ public class AuthService {    //private static final String BASE_URL = "https://
 
         return makePostRequest(endpoint, userData);    }
     
+    /**
+     * Get the current user's profile (authenticated user)
+     * 
+     * @return CompletableFuture with API response containing user profile
+     */
     public static CompletableFuture<JsonObject> getUserProfile() {
-        return makeGetRequest("/auth/me");
-    }
-      /**
+        System.out.println("Fetching current user profile");
+        String url = "/profile"; // Use the backend route
+        System.out.println("Full URL: " + BASE_URL + url);
+        return makeGetRequest(url);
+    }    /**
      * Get a specific student's profile by ID
      * 
      * @param studentId The ID of the student
      * @return CompletableFuture with API response containing student profile
-     */    public static CompletableFuture<JsonObject> getStudentProfile(String studentId) {
+     */
+    public static CompletableFuture<JsonObject> getStudentProfile(String studentId) {
         System.out.println("Fetching profile data for student ID: " + studentId);
-        // Use the standard format expected by the backend
-        String url = "/student/" + studentId;
+        // If studentId is provided, use /profile/:studentId endpoint, otherwise use /profile
+        String url = (studentId != null && !studentId.isEmpty()) ? "/profile/" + studentId : "/profile";
         System.out.println("Full URL: " + BASE_URL + url);
         return makeGetRequest(url);
     }
@@ -70,7 +79,8 @@ public class AuthService {    //private static final String BASE_URL = "https://
      * 
      * @param studentId The ID of the student (in the format ucb-XXXXX)
      * @return CompletableFuture with API response containing the student's study load
-     */    public static CompletableFuture<JsonObject> getStudentStudyLoad(String studentId) {        // This matches the backend route: '/student/:studentId/studyload'
+     */    public static CompletableFuture<JsonObject> getStudentStudyLoad(String studentId) {        
+        // This matches the backend route: '/student/:studentId/studyload'
         System.out.println("Fetching study load for student ID: " + studentId);
         String url = "/student/" + studentId + "/studyload";
         System.out.println("Full URL: " + BASE_URL + url);
@@ -109,6 +119,49 @@ public class AuthService {    //private static final String BASE_URL = "https://
                     System.out.println("Response body: " + responseBody);
                     System.out.println("Request URL: " + call.request().url());
                     System.out.println("Authorization header: " + (call.request().header("Authorization") != null ? "present" : "missing"));
+                      // Special handling for grade endpoints
+                    if (endpoint.contains("/teacher/subjects/grades")) {
+                        System.out.println("====================== GRADE API DETAILS ======================");
+                        System.out.println("Request method: " + call.request().method());
+                        System.out.println("Request URL: " + call.request().url());
+                        System.out.println("Endpoint: " + endpoint);
+                        
+                        // Print request headers
+                        System.out.println("Request headers: ");
+                        call.request().headers().names().forEach(name -> {
+                            System.out.println("  " + name + ": " + call.request().header(name));
+                        });
+                        
+                        // Note about request body (already logged earlier)
+                        if (requestBody != null) {
+                            System.out.println("Request body was: " + gson.toJson(requestBody));
+                        }
+                        
+                        // Log response details
+                        System.out.println("Response status: " + response.code() + " " + response.message());
+                        
+                        // Print response headers
+                        System.out.println("Response headers: ");
+                        response.headers().names().forEach(name -> {
+                            System.out.println("  " + name + ": " + response.header(name));
+                        });
+                        
+                        // Print the full response body
+                        System.out.println("Response body: " + responseBody);
+                        
+                        // Try to parse and pretty print if it's a valid JSON
+                        try {
+                            JsonObject jsonObj = gson.fromJson(responseBody, JsonObject.class);
+                            System.out.println("JSON response properties:");
+                            for (String key : jsonObj.keySet()) {
+                                System.out.println("  " + key + ": " + jsonObj.get(key));
+                            }
+                        } catch (Exception e) {
+                            System.out.println("Could not parse response as JSON: " + e.getMessage());
+                        }
+                        
+                        System.out.println("=============================================================");
+                    }
                     
                     if (response.isSuccessful()) {
                         JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);

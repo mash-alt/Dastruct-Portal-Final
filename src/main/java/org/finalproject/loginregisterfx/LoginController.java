@@ -163,7 +163,7 @@ public class LoginController {
                                 Stage currentStage = (Stage) loginButton.getScene().getWindow();
                                 currentStage.setScene(new Scene(teacherView, 930, 700));
                                 currentStage.setTitle("Teacher Portal");
-                                currentStage.setResizable(false);
+                                currentStage.setResizable(true);
                                 currentStage.show();
                                 currentStage.centerOnScreen();
                             } catch (Exception e) {

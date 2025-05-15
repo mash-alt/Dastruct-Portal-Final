@@ -63,11 +63,25 @@ public class TeacherController {
         
         // Fetch enrolled students data
         fetchEnrolledStudents();
-        
-        // Load teacher name from session if available
-        AuthService.getUserProfile().thenAccept(user -> {
-            if (user != null && user.has("name")) {
-                String teacherName = user.get("name").getAsString();
+          // Load teacher name from session if available
+        AuthService.getUserProfile().thenAccept(response -> {
+            System.out.println("Teacher profile response: " + response);
+            
+            // Extract the user data - API now returns nested user object
+            JsonObject userData = null;
+            if (response != null) {
+                if (response.has("user") && response.get("user").isJsonObject()) {
+                    // Extract from nested user object format: { user: { name: "..." } }
+                    userData = response.getAsJsonObject("user");
+                } else {
+                    // Direct format without nesting: { name: "..." }
+                    userData = response;
+                }
+            }
+            
+            // Process the user data
+            if (userData != null && userData.has("name")) {
+                String teacherName = userData.get("name").getAsString();
                 System.out.println("Got teacher name from profile: " + teacherName);
                 Platform.runLater(() -> {
                     if (teacherNameLabel != null) {

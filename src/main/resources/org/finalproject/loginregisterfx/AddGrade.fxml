@@ -63,11 +63,16 @@
             <font>
                 <Font size="11.0" />
             </font>
-        </Label>
-        <Label layoutX="30.0" layoutY="290.0" text="* Philippine standard grading: 1.0 (Excellent) to 5.0 (Failed)" textFill="#666666">
+        </Label>        <Label layoutX="30.0" layoutY="290.0" text="* Philippine standard grading: 1.0 (Excellent) to 5.0 (Failed)" textFill="#666666">
             <font>
                 <Font size="11.0" />
             </font>
         </Label>
+        
+        <!-- Hidden debug button that can be made visible for testing -->
+        <Button fx:id="testButton" layoutX="310.0" layoutY="290.0" mnemonicParsing="false" prefHeight="25.0" prefWidth="65.0" 
+                style="-fx-background-color: #9E9E9E; -fx-text-fill: white; -fx-font-size: 10px;" text="Test API" 
+                visible="false" onAction="#handleTestButtonClick">
+        </Button>
     </children>
 </AnchorPane>

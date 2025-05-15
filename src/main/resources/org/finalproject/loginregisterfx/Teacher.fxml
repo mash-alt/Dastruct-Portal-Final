@@ -43,7 +43,7 @@
                                 <Insets bottom="8.0" top="10.0" />
                             </VBox.margin>
                         </Circle>
-                        <Label fx:id="teacherNameLabel" text="Hawwyyy" textFill="WHITE">
+                        <Label fx:id="teacherNameLabel" text="Teacher" textFill="WHITE">
                             <font>
                                 <Font name="System Bold" size="14.0" />
                             </font>
