@@ -35,16 +35,69 @@ public class EnrolledStudentsBySubjectModel {
         } else {
             // Default to 0
             this.enrolledStudentCount = 0;
+            System.out.println("No studentCount found in JSON for " + this.subjectCode + ", defaulting to 0");
         }
         
         if (json.has("enrolledStudents") && json.get("enrolledStudents").isJsonArray()) {
             JsonArray studentsArray = json.getAsJsonArray("enrolledStudents");
-            
-            // Process each student in the array
+                  // Process each student in the array
             for (int i = 0; i < studentsArray.size(); i++) {
                 try {
                     JsonObject studentObj = studentsArray.get(i).getAsJsonObject();
+                    
+                    // Create student model and extract grade information
                     StudentModel student = new StudentModel(studentObj);
+                    
+                    // Check for grades in the student's subjects array for this specific subject
+                    if (studentObj.has("subjects") && studentObj.get("subjects").isJsonArray()) {
+                        JsonArray subjectsArray = studentObj.getAsJsonArray("subjects");
+                        
+                        for (int j = 0; j < subjectsArray.size(); j++) {
+                            try {
+                                JsonObject subjectObj = subjectsArray.get(j).getAsJsonObject();
+                                
+                                // Check if this subject matches our current subject
+                                boolean isMatchingSubject = false;
+                                
+                                if (subjectObj.has("_id") && this.subjectId != null && !this.subjectId.isEmpty()) {
+                                    if (subjectObj.get("_id").getAsString().equals(this.subjectId)) {
+                                        isMatchingSubject = true;
+                                    }
+                                }
+                                
+                                if (subjectObj.has("edpCode") && this.subjectCode != null && !this.subjectCode.isEmpty()) {
+                                    if (subjectObj.get("edpCode").getAsString().equals(this.subjectCode)) {
+                                        isMatchingSubject = true;
+                                    }
+                                }
+                                
+                                if (isMatchingSubject) {
+                                    System.out.println("Found matching subject for student " + student.getName());
+                                    
+                                    // Extract grade information
+                                    if (subjectObj.has("grades") && !subjectObj.get("grades").isJsonNull()) {
+                                        JsonObject gradesObj = subjectObj.getAsJsonObject("grades");
+                                        
+                                        if (gradesObj.has("midtermGrade") && !gradesObj.get("midtermGrade").isJsonNull()) {
+                                            String midtermGrade = gradesObj.get("midtermGrade").toString();
+                                            student.setMidtermGrade(midtermGrade);
+                                            System.out.println("Found midterm grade for student " + student.getName() + ": " + midtermGrade);
+                                        }
+                                        
+                                        if (gradesObj.has("finalGrade") && !gradesObj.get("finalGrade").isJsonNull()) {
+                                            String finalGrade = gradesObj.get("finalGrade").toString();
+                                            student.setFinalGrade(finalGrade);
+                                            System.out.println("Found final grade for student " + student.getName() + ": " + finalGrade);
+                                        }
+                                    }
+                                    break;
+                                }
+                            } catch (Exception e) {
+                                System.err.println("Error processing subject in student's subjects: " + e.getMessage());
+                            }
+                        }
+                    }
+                    
                     enrolledStudents.add(student);
                 } catch (Exception e) {
                     System.err.println("Error processing student data: " + e.getMessage());

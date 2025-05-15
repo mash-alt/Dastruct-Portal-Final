@@ -12,13 +12,12 @@
         <Label layoutX="51.0" layoutY="22.0" style="-fx-font-size: 18; -fx-font-weight: bold;" text="Students Enrolled" />
         <TextField fx:id="searchStudentsField" layoutX="51.0" layoutY="55.0" prefWidth="300.0" promptText="Search students" />
         <TableView fx:id="studentsTableView" layoutY="100.0" prefHeight="300.0" prefWidth="600.0">
-            <columns>
-                <TableColumn fx:id="idNumberColumn" prefWidth="120.0" text="ID NUMBER" />
+            <columns>            <TableColumn fx:id="idNumberColumn" prefWidth="120.0" text="ID NUMBER" />
                 <TableColumn fx:id="studentNameColumn" prefWidth="200.0" text="STUDENT NAME" />
                 <TableColumn fx:id="courseColumn" prefWidth="78.4000244140625" text="COURSE" />
                 <TableColumn fx:id="sectionColumn" prefWidth="87.20001220703125" text="SECTION" />
-            <TableColumn prefWidth="55.20001220703125" text="MG" />
-            <TableColumn prefWidth="57.59991455078125" text="FG" />
+            <TableColumn fx:id="midtermGradeColumn" prefWidth="55.20001220703125" text="MG" />
+            <TableColumn fx:id="finalGradeColumn" prefWidth="57.59991455078125" text="FG" />
             </columns>
         </TableView>
     </children>

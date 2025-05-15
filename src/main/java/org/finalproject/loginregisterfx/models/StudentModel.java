@@ -96,6 +96,45 @@ public class StudentModel {
     private List<SubjectModel> enrolledSubjects;
     private boolean isEnrolled; // Added isEnrolled field
     private List<AcademicTerm> academicHistory; // Academic history records
+    // Fields for displaying grades in the UI
+    private String midtermGrade;
+    private String finalGrade;
+    
+    /**
+     * Set midterm grade 
+     * 
+     * @param midtermGrade The midterm grade to set
+     */
+    public void setMidtermGrade(String midtermGrade) {
+        this.midtermGrade = midtermGrade;
+    }
+    
+    /**
+     * Get midterm grade
+     * 
+     * @return The midterm grade
+     */
+    public String getMidtermGrade() {
+        return midtermGrade;
+    }
+    
+    /**
+     * Set final grade
+     * 
+     * @param finalGrade The final grade to set
+     */
+    public void setFinalGrade(String finalGrade) {
+        this.finalGrade = finalGrade;
+    }
+    
+    /**
+     * Get final grade
+     * 
+     * @return The final grade
+     */
+    public String getFinalGrade() {
+        return finalGrade;
+    }
       /**
      * Constructor that initializes the model from a JsonObject
      */    public StudentModel(JsonObject json) {

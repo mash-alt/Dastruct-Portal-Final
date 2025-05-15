@@ -46,13 +46,12 @@
                         <Font name="System Bold" size="13.0" />
                     </font>
                 </Label>
-                <TextField fx:id="finalGradeField" layoutX="130.0" layoutY="127.0" prefHeight="25.0" prefWidth="150.0" promptText="1.0 - 5.0" />
-                <Button fx:id="addGradeButton" layoutX="68.0" layoutY="168.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #1976D2; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;" text="Add Grade">
+                <TextField fx:id="finalGradeField" layoutX="130.0" layoutY="127.0" prefHeight="25.0" prefWidth="150.0" promptText="1.0 - 5.0" />                <Button fx:id="addGradeButton" layoutX="68.0" layoutY="168.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #1976D2; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;" text="Add Grade">
                     <font>
                         <Font name="System Bold" size="13.0" />
                     </font>
                 </Button>
-                <Button fx:id="updateGradeButton" layoutX="68.0" layoutY="168.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #2E7D32; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand; -fx-opacity: 0.9;" text="Update Grade" visible="false">
+                <Button fx:id="updateGradeButton" layoutX="68.0" layoutY="168.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #2E7D32; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand; -fx-opacity: 0.9;" text="Update Grade" disable="true">
                     <font>
                         <Font name="System Bold" size="13.0" />
                     </font>

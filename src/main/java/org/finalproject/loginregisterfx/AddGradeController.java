@@ -112,8 +112,7 @@ public class AddGradeController {
             dateTimeLabel.setText(now.format(formatter));
         }
     }
-    
-    /**
+      /**
      * Load existing grades for this student and subject
      */
     private void loadExistingGrades() {
@@ -121,13 +120,41 @@ public class AddGradeController {
             return;
         }
         
-        // Query the API for the student's grades in this subject
-        String endpoint = "/teacher/student/" + student.getId() + "/grades";
+        // Load grades directly from the student model if available
+        String existingMidtermGrade = student.getMidtermGrade();
+        String existingFinalGrade = student.getFinalGrade();
+        
+        boolean hasExistingGrades = false;
+        
+        if (existingMidtermGrade != null && !existingMidtermGrade.isEmpty()) {
+            midtermGradeField.setText(existingMidtermGrade);
+            hasExistingGrades = true;
+            System.out.println("Loaded existing midterm grade from student model: " + existingMidtermGrade);
+        }
+        
+        if (existingFinalGrade != null && !existingFinalGrade.isEmpty()) {
+            finalGradeField.setText(existingFinalGrade);
+            hasExistingGrades = true;
+            System.out.println("Loaded existing final grade from student model: " + existingFinalGrade);
+        }
+          // If we already have grades, enable update button and show it
+        if (hasExistingGrades) {
+            updateGradeButton.setDisable(false);
+            updateGradeButton.setVisible(true);
+            addGradeButton.setDisable(true);
+            addGradeButton.setVisible(false);
+            return;
+        }
+        
+        // If no grades in the model, query the API for the student's grades in this subject
+        String endpoint = "/teacher/student/" + student.getId() + "/subjects/" + subjectCode + "/grades";
+        System.out.println("Fetching grades from API endpoint: " + endpoint);
         
         AuthService.makeGetRequest(endpoint)
             .thenAccept(response -> {
                 javafx.application.Platform.runLater(() -> {
                     try {
+                        System.out.println("Grade API response: " + (response != null ? response.toString() : "null"));
                         if (response != null && response.has("grades")) {
                             JsonObject gradesObj = response.getAsJsonObject("grades");
                             
@@ -135,26 +162,34 @@ public class AddGradeController {
                             if (gradesObj.has("midtermGrade") && !gradesObj.get("midtermGrade").isJsonNull()) {
                                 String midtermGrade = gradesObj.get("midtermGrade").getAsString();
                                 midtermGradeField.setText(midtermGrade);
+                                student.setMidtermGrade(midtermGrade); // Update student model
+                                System.out.println("Loaded midterm grade from API: " + midtermGrade);
                             }
                             
                             // Check if final grade exists
                             if (gradesObj.has("finalGrade") && !gradesObj.get("finalGrade").isJsonNull()) {
                                 String finalGrade = gradesObj.get("finalGrade").getAsString();
                                 finalGradeField.setText(finalGrade);
+                                student.setFinalGrade(finalGrade); // Update student model
+                                System.out.println("Loaded final grade from API: " + finalGrade);
                             }
-                            
-                            // If grades exist, enable the update button and disable add button
+                              // If grades exist, enable the update button and disable add button
                             if (gradesObj.has("midtermGrade") || gradesObj.has("finalGrade")) {
                                 updateGradeButton.setDisable(false);
+                                updateGradeButton.setVisible(true);
                                 addGradeButton.setDisable(true);
+                                addGradeButton.setVisible(false);
                             } else {
                                 updateGradeButton.setDisable(true);
+                                updateGradeButton.setVisible(false);
                                 addGradeButton.setDisable(false);
-                            }
-                        } else {
+                                addGradeButton.setVisible(true);
+                            }                        } else {
                             // No grades found, enable add button and disable update button
                             updateGradeButton.setDisable(true);
+                            updateGradeButton.setVisible(false);
                             addGradeButton.setDisable(false);
+                            addGradeButton.setVisible(true);
                         }
                     } catch (Exception e) {
                         System.err.println("Error loading existing grades: " + e.getMessage());
@@ -163,11 +198,12 @@ public class AddGradeController {
                 });
             })
             .exceptionally(ex -> {
-                System.err.println("Error fetching grades: " + ex.getMessage());
-                // On error, enable add button as the default action
+                System.err.println("Error fetching grades: " + ex.getMessage());                // On error, enable add button as the default action
                 javafx.application.Platform.runLater(() -> {
                     updateGradeButton.setDisable(true);
+                    updateGradeButton.setVisible(false);
                     addGradeButton.setDisable(false);
+                    addGradeButton.setVisible(true);
                 });
                 return null;
             });
@@ -314,10 +350,70 @@ public class AddGradeController {
                     }
                 }
                 System.out.println("============================================================");
-                
-                javafx.application.Platform.runLater(() -> {
+                  javafx.application.Platform.runLater(() -> {
                     if (response != null && response.has("message")) {
                         String successMsg = response.get("message").getAsString();
+                        
+                        System.out.println("========== GRADE SUBMISSION SUCCESS ==========");
+                        System.out.println("Student: " + student.getName() + " (ID: " + student.getId() + ")");
+                        System.out.println("Before update - Midterm: " + student.getMidtermGrade() + ", Final: " + student.getFinalGrade());
+                          
+                        // Update the student model with the new grades
+                        if (!midtermText.isEmpty()) {
+                            student.setMidtermGrade(midtermText);
+                            System.out.println("Set midterm grade to: " + midtermText);
+                        }
+                        
+                        if (!finalText.isEmpty()) {
+                            student.setFinalGrade(finalText);
+                            System.out.println("Set final grade to: " + finalText);
+                        }
+                        
+                        System.out.println("After update - Midterm: " + student.getMidtermGrade() + ", Final: " + student.getFinalGrade());
+                        
+                        // Get grades from API response if available
+                        if (response.has("subject")) {
+                            try {
+                                JsonObject subjectObj = response.getAsJsonObject("subject");
+                                if (subjectObj.has("grades")) {
+                                    JsonObject grades = subjectObj.getAsJsonObject("grades");
+                                    if (grades.has(student.getId())) {
+                                        JsonObject studentGrades = grades.getAsJsonObject(student.getId());
+                                        System.out.println("Found student grades in API response");
+                                        
+                                        // Update with the values from API response for consistency
+                                        if (studentGrades.has("midtermGrade") && !studentGrades.get("midtermGrade").isJsonNull()) {
+                                            String apiMidtermGrade = studentGrades.get("midtermGrade").getAsString();
+                                            student.setMidtermGrade(apiMidtermGrade);
+                                            System.out.println("Updated midterm grade from API response: " + apiMidtermGrade);
+                                        }
+                                        
+                                        if (studentGrades.has("finalGrade") && !studentGrades.get("finalGrade").isJsonNull()) {
+                                            String apiFinalGrade = studentGrades.get("finalGrade").getAsString();
+                                            student.setFinalGrade(apiFinalGrade);
+                                            System.out.println("Updated final grade from API response: " + apiFinalGrade);
+                                        }
+                                    }
+                                }
+                            } catch (Exception e) {
+                                System.out.println("Error extracting grades from API response: " + e.getMessage());
+                            }
+                        }
+                        
+                        System.out.println("Final values - Midterm: " + student.getMidtermGrade() + ", Final: " + student.getFinalGrade());
+
+                        // Notify parent controller that grades were updated
+                        if (dialogStage.getUserData() instanceof StudentsViewController) {
+                            StudentsViewController controller = (StudentsViewController) dialogStage.getUserData();
+                            System.out.println("Found StudentsViewController in userData, refreshing student data");
+                            controller.refreshStudentData(student);
+                            System.out.println("Notified StudentsViewController to refresh data for student: " + student.getId());
+                        } else {
+                            System.out.println("WARNING: Dialog's userData is not StudentsViewController. Type: " + 
+                                              (dialogStage.getUserData() != null ? dialogStage.getUserData().getClass().getName() : "null"));
+                        }
+                        
+                        // Show success message
                         showAlert("Success", successMsg);
                         
                         // Close the dialog after successful operation

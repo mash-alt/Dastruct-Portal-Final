@@ -33,8 +33,7 @@ public class TeacherController {
     // Data storage
     private ObservableList<EnrolledStudentsBySubjectModel> subjectsWithStudents = FXCollections.observableArrayList();
     private ObservableList<EnrolledStudentsBySubjectModel> filteredSubjects = FXCollections.observableArrayList();
-    
-    @FXML
+      @FXML
     private void initialize() {
         System.out.println("Initializing TeacherController...");
         
@@ -47,15 +46,20 @@ public class TeacherController {
         
         // Set up table columns
         setupTableColumns();
+          // Set up refresh button handler
+        if (refreshButton != null) {
+            refreshButton.setOnAction(e -> fetchEnrolledStudents());
+            System.out.println("Refresh button handler configured");
+        } else {
+            System.err.println("Refresh button is null in TeacherController");
+        }
         
         // Set up search functionality
         if (searchField != null) {
             searchField.setOnAction(e -> handleSearch());
-        }
-        
-        // Set up refresh button if it exists
-        if (refreshButton != null) {
-            refreshButton.setOnAction(e -> fetchEnrolledStudents());
+            System.out.println("Search field handler configured");
+        } else {
+            System.err.println("Search field is null in TeacherController");
         }
         
         // Set up double-click handler for the table
@@ -184,8 +188,7 @@ public class TeacherController {
             progressIndicator.setMaxSize(50, 50);
             mainTableView.setPlaceholder(progressIndicator);
         }
-        
-        // Clear previous data
+          // Clear previous data
         subjectsWithStudents.clear();        // Make API request
         AuthService.makeGetRequest("/teacher/enrolled-students").thenAccept(response -> {
             System.out.println("Received enrolled students response: " + response);
@@ -209,10 +212,50 @@ public class TeacherController {
                         System.out.println("Found " + subjectsArray.size() + " subjects with students");
                         
                         if (subjectsArray.size() > 0) {
+                            // Process the subjects array
                             for (int i = 0; i < subjectsArray.size(); i++) {
                                 try {
                                     JsonObject subjectObj = subjectsArray.get(i).getAsJsonObject();
+                                    
+                                    // Create a new model from the subject object
                                     EnrolledStudentsBySubjectModel model = new EnrolledStudentsBySubjectModel(subjectObj);
+                                    
+                                    // Check if we have enrolledStudents array in the main response
+                                    if (response.has("enrolledStudents") && response.get("enrolledStudents").isJsonArray()) {
+                                        JsonArray enrolledStudentsArray = response.getAsJsonArray("enrolledStudents");
+                                        int studentCount = 0;
+                                        
+                                        // Count students enrolled in this specific subject
+                                        for (int j = 0; j < enrolledStudentsArray.size(); j++) {
+                                            JsonObject studentObj = enrolledStudentsArray.get(j).getAsJsonObject();
+                                            
+                                            // Check if student is enrolled in this subject
+                                            if (studentObj.has("subjects") && studentObj.get("subjects").isJsonArray()) {
+                                                JsonArray studentSubjects = studentObj.getAsJsonArray("subjects");
+                                                
+                                                for (int k = 0; k < studentSubjects.size(); k++) {
+                                                    JsonObject studentSubject = studentSubjects.get(k).getAsJsonObject();
+                                                    
+                                                    if (studentSubject.has("_id") && 
+                                                        studentSubject.get("_id").getAsString().equals(model.getSubjectId())) {
+                                                        studentCount++;
+                                                        break;
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        
+                                        // If we have a student count from the API response, use it
+                                        if (subjectObj.has("studentCount")) {
+                                            model.setEnrolledStudentCount(subjectObj.get("studentCount").getAsInt());
+                                        } else {
+                                            // Otherwise set the counted value
+                                            model.setEnrolledStudentCount(studentCount);
+                                        }
+                                        
+                                        System.out.println("Counted " + studentCount + " students for subject " + model.getSubjectCode());
+                                    }
+                                    
                                     subjectsWithStudents.add(model);
                                     
                                     System.out.println("Added subject: " + model.getSubjectCode() + 
@@ -232,7 +275,7 @@ public class TeacherController {
                     } else {
                         // No subjects array in response
                         handleEmptyResponse(message);
-                    }                } catch (Exception e) {
+                    }} catch (Exception e) {
                     System.err.println("Error processing enrolled students response: " + e.getMessage());
                     e.printStackTrace();
                     showError("Failed to load enrolled students: " + e.getMessage());
@@ -342,11 +385,19 @@ public class TeacherController {
             // Get the controller
             StudentsViewController controller = loader.getController();
             
+            // Add a listener to the stage that will be triggered when the window closes
+            Stage stage = new Stage();
+            stage.setOnHidden(event -> {
+                System.out.println("MyStudents window closed, refreshing data...");
+                // Refresh the subject list when returning from the student view
+                // This ensures any grade changes are reflected in the UI
+                fetchEnrolledStudents();
+            });
+            
             // Pass the subject data to the controller
             controller.setSubjectData(subject);
             
-            // Create a new stage
-            Stage stage = new Stage();
+            // Configure the stage
             stage.setTitle("Students Enrolled in " + subject.getSubjectCode() + " - " + subject.getSubjectName());
             stage.initModality(Modality.WINDOW_MODAL);
             stage.initOwner(mainTableView.getScene().getWindow());
@@ -367,7 +418,8 @@ public class TeacherController {
             stage.show();
             
             // Debug info - note that the actual student count will be determined by the API call
-            System.out.println("MyStudents view opened for subject: " + subject.getSubjectCode());
+            System.out.println("MyStudents view opened for subject: " + subject.getSubjectCode() + 
+                               " with ID: " + subject.getSubjectId());
             
         } catch (Exception e) {
             System.err.println("Error opening MyStudents view: " + e.getMessage());
@@ -413,5 +465,14 @@ public class TeacherController {
         filteredSubjects.clear();
         
         System.out.println("Displayed empty state with message: " + message);
+    }
+    
+    /**
+     * Public method to refresh the teacher's subject and student data
+     * Can be called from other controllers when data needs updating
+     */
+    public void refreshData() {
+        System.out.println("Explicitly refreshing teacher data...");
+        fetchEnrolledStudents();
     }
 }
