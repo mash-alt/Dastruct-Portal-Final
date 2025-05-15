@@ -137,10 +137,42 @@ public class SubjectModel {
             prerequisites.add(prerequisite);
         }
     }
-    
-    // Set a grade for a student
+      // Set a grade for a student
     public void setGrade(String studentId, double midterm, double finalGrade) {
         grades.put(studentId, new GradeInfo(midterm, finalGrade));
+    }
+    
+    /**
+     * Check if a student has grades for this subject
+     * @param student The student to check
+     * @return true if student has grades, false otherwise
+     */
+    public boolean hasGrade(StudentModel student) {
+        return student != null && student.getId() != null && grades.containsKey(student.getId());
+    }
+    
+    /**
+     * Get a student's midterm grade for this subject
+     * @param student The student
+     * @return Midterm grade or null if not found
+     */
+    public Double getMidtermGrade(StudentModel student) {
+        if (hasGrade(student)) {
+            return grades.get(student.getId()).getMidtermGrade();
+        }
+        return null;
+    }
+    
+    /**
+     * Get a student's final grade for this subject
+     * @param student The student
+     * @return Final grade or null if not found
+     */
+    public Double getFinalGrade(StudentModel student) {
+        if (hasGrade(student)) {
+            return grades.get(student.getId()).getFinalGrade();
+        }
+        return null;
     }
     
     /**

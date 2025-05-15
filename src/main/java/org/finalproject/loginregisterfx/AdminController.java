@@ -949,7 +949,7 @@ public class AdminController {    @FXML private TableView<Object> mainTableView;
         dialog.getDialogPane().setPrefWidth(500); // Make dialog wider
 
         // Fetch subjects for the dialog
-        AuthService.makeGetRequest("/admin/subjects").thenAccept(subjectResp -> {
+        AuthService.makeGetRequest("/admin/all-subjects").thenAccept(subjectResp -> {
             Platform.runLater(() -> {
                 JsonArray subjectsArray = subjectResp.getAsJsonArray("subjects"); // Corrected variable name
                 allSubjects.clear();

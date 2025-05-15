@@ -1,4 +1,5 @@
-module org.finalproject.loginregisterfx {    requires javafx.controls;
+module org.finalproject.loginregisterfx {    
+    requires javafx.controls;
     requires javafx.fxml;
     requires transitive com.google.gson;
     requires okhttp3;

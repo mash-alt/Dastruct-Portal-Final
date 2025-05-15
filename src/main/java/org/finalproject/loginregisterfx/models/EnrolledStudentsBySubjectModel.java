@@ -18,8 +18,7 @@ public class EnrolledStudentsBySubjectModel {
     /**
      * Constructor that initializes the model from a JsonObject
      */
-    public EnrolledStudentsBySubjectModel(JsonObject json) {
-        this.subjectId = json.has("_id") ? json.get("_id").getAsString() : "";
+    public EnrolledStudentsBySubjectModel(JsonObject json) {        this.subjectId = json.has("_id") ? json.get("_id").getAsString() : "";
         this.subjectCode = json.has("edpCode") ? json.get("edpCode").getAsString() : 
                            (json.has("subjectCode") ? json.get("subjectCode").getAsString() : "");
         this.subjectName = json.has("name") ? json.get("name").getAsString() : 
@@ -27,6 +26,15 @@ public class EnrolledStudentsBySubjectModel {
         
         // Initialize enrolled students list
         this.enrolledStudents = new ArrayList<>();
+        
+        // Get student count directly from the JSON if available
+        if (json.has("studentCount") && !json.get("studentCount").isJsonNull()) {
+            this.enrolledStudentCount = json.get("studentCount").getAsInt();
+            System.out.println("Retrieved studentCount from JSON for " + this.subjectCode + ": " + this.enrolledStudentCount);
+        } else {
+            // Default to 0
+            this.enrolledStudentCount = 0;
+        }
         
         if (json.has("enrolledStudents") && json.get("enrolledStudents").isJsonArray()) {
             JsonArray studentsArray = json.getAsJsonArray("enrolledStudents");
@@ -41,10 +49,12 @@ public class EnrolledStudentsBySubjectModel {
                     System.err.println("Error processing student data: " + e.getMessage());
                 }
             }
+            
+            // Only override the count if we don't have a studentCount field but we do have enrolledStudents
+            if (!json.has("studentCount") && !enrolledStudents.isEmpty()) {
+                this.enrolledStudentCount = enrolledStudents.size();
+            }
         }
-        
-        // Set the count of enrolled students
-        this.enrolledStudentCount = enrolledStudents.size();
     }
     
     /**

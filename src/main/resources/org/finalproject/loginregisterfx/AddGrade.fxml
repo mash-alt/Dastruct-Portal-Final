@@ -2,12 +2,13 @@
 
 <?import javafx.scene.control.Button?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
 <?import javafx.scene.layout.AnchorPane?>
 <?import javafx.scene.text.Font?>
 
-<AnchorPane prefHeight="285.0" prefWidth="392.0" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.TeacherController">
+<AnchorPane prefHeight="330.0" prefWidth="392.0" style="-fx-background-color: #f5f5f5;" xmlns="http://javafx.com/javafx/23.0.1" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.finalproject.loginregisterfx.AddGradeController">
     <children>
-        <Label alignment="CENTER" layoutY="15.0" prefHeight="30.0" prefWidth="392.0" text="Teacher Dashboard">
+        <Label alignment="CENTER" layoutY="15.0" prefHeight="30.0" prefWidth="392.0" text="Add Student Grade">
             <font>
                 <Font name="System Bold" size="16.0" />
             </font>
@@ -24,19 +25,46 @@
                         <Font name="System Bold" size="13.0" />
                     </font>
                 </Label>
-                <Button layoutX="68.0" layoutY="103.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #1976D2; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;" text="Add Grade">
+                <Label fx:id="studentNameLabel" layoutX="130.0" layoutY="26.0" text="Student Name Here" textFill="#333333">
+                    <font>
+                        <Font size="13.0" />
+                    </font>
+                </Label>
+                <Label fx:id="subjectLabel" layoutX="130.0" layoutY="61.0" text="Subject Code - Subject Name" textFill="#333333">
+                    <font>
+                        <Font size="13.0" />
+                    </font>
+                </Label>
+                <Label layoutX="29.0" layoutY="96.0" text="Midterm Grade:">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Label>
+                <TextField fx:id="midtermGradeField" layoutX="130.0" layoutY="92.0" prefHeight="25.0" prefWidth="150.0" promptText="1.0 - 5.0" />
+                <Label layoutX="29.0" layoutY="131.0" text="Final Grade:">
+                    <font>
+                        <Font name="System Bold" size="13.0" />
+                    </font>
+                </Label>
+                <TextField fx:id="finalGradeField" layoutX="130.0" layoutY="127.0" prefHeight="25.0" prefWidth="150.0" promptText="1.0 - 5.0" />
+                <Button fx:id="addGradeButton" layoutX="68.0" layoutY="168.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #1976D2; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;" text="Add Grade">
                     <font>
                         <Font name="System Bold" size="13.0" />
                     </font>
                 </Button>
-                <Button layoutX="68.0" layoutY="145.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #1976D2; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand;" text="Update Grade">
+                <Button fx:id="updateGradeButton" layoutX="68.0" layoutY="168.0" mnemonicParsing="false" prefHeight="35.0" prefWidth="196.0" style="-fx-background-color: #2E7D32; -fx-background-radius: 8; -fx-text-fill: white; -fx-cursor: hand; -fx-opacity: 0.9;" text="Update Grade" visible="false">
                     <font>
                         <Font name="System Bold" size="13.0" />
                     </font>
                 </Button>
             </children>
         </AnchorPane>
-        <Label alignment="CENTER_RIGHT" layoutX="85.0" layoutY="255.0" prefHeight="15.0" prefWidth="225.0" text="2025-05-14 03:04:05" textFill="#666666">
+        <Label fx:id="dateTimeLabel" alignment="CENTER_RIGHT" layoutX="85.0" layoutY="290.0" prefHeight="15.0" prefWidth="225.0" text="2025-05-15 00:00:00" textFill="#666666">
+            <font>
+                <Font size="11.0" />
+            </font>
+        </Label>
+        <Label layoutX="30.0" layoutY="290.0" text="* Philippine standard grading: 1.0 (Excellent) to 5.0 (Failed)" textFill="#666666">
             <font>
                 <Font size="11.0" />
             </font>

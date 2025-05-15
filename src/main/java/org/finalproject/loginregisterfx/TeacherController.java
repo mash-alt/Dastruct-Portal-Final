@@ -11,6 +11,7 @@ import javafx.scene.Parent;
 import javafx.scene.Scene;
 import javafx.scene.control.*;
 import javafx.scene.control.cell.PropertyValueFactory;
+import javafx.scene.layout.VBox;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
 import org.finalproject.loginregisterfx.Service.AuthService;
@@ -171,45 +172,66 @@ public class TeacherController {
         }
         
         // Clear previous data
-        subjectsWithStudents.clear();
-        
-        // Make API request
+        subjectsWithStudents.clear();        // Make API request
         AuthService.makeGetRequest("/teacher/enrolled-students").thenAccept(response -> {
             System.out.println("Received enrolled students response: " + response);
             
             Platform.runLater(() -> {
                 try {
+                    // Make sure we clear any loading indicators
+                    if (mainTableView == null) {
+                        System.err.println("mainTableView is null, cannot update UI");
+                        return;
+                    }
+                    
+                    // Extract message from the response if available
+                    String message = "No enrolled students found";
+                    if (response.has("message")) {
+                        message = response.get("message").getAsString();
+                    }
+                    
                     if (response.has("subjects") && response.get("subjects").isJsonArray()) {
                         JsonArray subjectsArray = response.getAsJsonArray("subjects");
                         System.out.println("Found " + subjectsArray.size() + " subjects with students");
                         
-                        for (int i = 0; i < subjectsArray.size(); i++) {
-                            try {
-                                JsonObject subjectObj = subjectsArray.get(i).getAsJsonObject();
-                                EnrolledStudentsBySubjectModel model = new EnrolledStudentsBySubjectModel(subjectObj);
-                                subjectsWithStudents.add(model);
-                                
-                                System.out.println("Added subject: " + model.getSubjectCode() + 
-                                                   " with " + model.getEnrolledStudentCount() + " students");
-                            } catch (Exception e) {
-                                System.err.println("Error processing subject: " + e.getMessage());
-                                e.printStackTrace();
+                        if (subjectsArray.size() > 0) {
+                            for (int i = 0; i < subjectsArray.size(); i++) {
+                                try {
+                                    JsonObject subjectObj = subjectsArray.get(i).getAsJsonObject();
+                                    EnrolledStudentsBySubjectModel model = new EnrolledStudentsBySubjectModel(subjectObj);
+                                    subjectsWithStudents.add(model);
+                                    
+                                    System.out.println("Added subject: " + model.getSubjectCode() + 
+                                                       " with " + model.getEnrolledStudentCount() + " students");
+                                } catch (Exception e) {
+                                    System.err.println("Error processing subject: " + e.getMessage());
+                                    e.printStackTrace();
+                                }
                             }
+                            
+                            // Update the filtered list and display
+                            updateFilteredList("");
+                        } else {
+                            // Empty subjects array - display the message to the user
+                            handleEmptyResponse(message);
                         }
-                        
-                        // Update the filtered list and display
-                        updateFilteredList("");
-                        
                     } else {
-                        // No subjects or empty response
-                        mainTableView.setPlaceholder(new Label("No enrolled students found"));
-                        System.out.println("No subjects with students found in response");
-                    }
-                } catch (Exception e) {
+                        // No subjects array in response
+                        handleEmptyResponse(message);
+                    }                } catch (Exception e) {
                     System.err.println("Error processing enrolled students response: " + e.getMessage());
                     e.printStackTrace();
                     showError("Failed to load enrolled students: " + e.getMessage());
-                    mainTableView.setPlaceholder(new Label("Error loading data"));
+                    
+                    // Ensure we have a placeholder even if there's an error
+                    Label errorLabel = new Label("Error loading data: " + e.getMessage());
+                    errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 14px;");
+                    mainTableView.setPlaceholder(errorLabel);
+                    
+                    // Update list title with 0 count
+                    if (listTitleLabel != null) {
+                        listTitleLabel.setText("Subject List (0)");
+                    }
                 }
             });
         }).exceptionally(ex -> {
@@ -217,8 +239,20 @@ public class TeacherController {
             ex.printStackTrace();
             
             Platform.runLater(() -> {
-                showError("Failed to fetch enrolled students: " + ex.getMessage());
-                mainTableView.setPlaceholder(new Label("Error loading data"));
+                // Don't show an error dialog for "no subjects" responses
+                if (ex.getMessage() != null && !ex.getMessage().contains("No subjects")) {
+                    showError("Failed to fetch enrolled students: " + ex.getMessage());
+                }
+                
+                // Set up a nice looking error message
+                Label errorLabel = new Label("Connection error: " + ex.getMessage());
+                errorLabel.setStyle("-fx-text-fill: #e74c3c; -fx-font-size: 14px;");
+                mainTableView.setPlaceholder(errorLabel);
+                
+                // Update list title with 0 count
+                if (listTitleLabel != null) {
+                    listTitleLabel.setText("Subject List (0)");
+                }
             });
             
             return null;
@@ -326,5 +360,44 @@ public class TeacherController {
             e.printStackTrace();
             showError("Error displaying enrolled students: " + e.getMessage());
         }
+    }
+    
+    /**
+     * Helper method to handle empty response from the API
+     * @param message The message to display to the user
+     */
+    private void handleEmptyResponse(String message) {
+        // Create a visually appealing "no data" message
+        VBox noDataBox = new VBox();
+        noDataBox.setAlignment(javafx.geometry.Pos.CENTER);
+        noDataBox.setSpacing(10);
+        
+        // Add an icon or image if you like
+        Label iconLabel = new Label("📚");
+        iconLabel.setStyle("-fx-font-size: 40px;");
+        
+        // Add the message
+        Label messageLabel = new Label(message);
+        messageLabel.setStyle("-fx-text-fill: #555555; -fx-font-size: 16px;");
+        
+        // Add a smaller hint message
+        Label hintLabel = new Label("You will see subject data once students are enrolled");
+        hintLabel.setStyle("-fx-text-fill: #888888; -fx-font-size: 14px;");
+        
+        // Add components to the box
+        noDataBox.getChildren().addAll(iconLabel, messageLabel, hintLabel);
+        
+        // Set as table placeholder
+        mainTableView.setPlaceholder(noDataBox);
+        
+        // Update list title with 0 count
+        if (listTitleLabel != null) {
+            listTitleLabel.setText("Subject List (0)");
+        }
+        
+        // Clear any filtered results
+        filteredSubjects.clear();
+        
+        System.out.println("Displayed empty state with message: " + message);
     }
 }

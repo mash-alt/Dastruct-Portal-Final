@@ -19,12 +19,12 @@ import org.finalproject.loginregisterfx.Service.SessionManager;
 import java.util.List;
 
 /**
- * Controller class for managing the study load view and functionality
+ * Controller class for managing the e-grade view and functionality
  */
-public class StudyLoadController {
+public class EGradeController {
     
     @FXML
-    private TableView<EnrolledSubjectModel> subjectsTable;
+    private TableView<EnrolledSubjectModel> gradesTable;
     
     @FXML
     private TableColumn<EnrolledSubjectModel, String> subjectCodeCol;
@@ -36,30 +36,33 @@ public class StudyLoadController {
     private TableColumn<EnrolledSubjectModel, Integer> subjectUnitsCol;
     
     @FXML
-    private TableColumn<EnrolledSubjectModel, String> scheduleCol;
+    private TableColumn<EnrolledSubjectModel, String> midtermGradeCol;
     
     @FXML
-    private TableColumn<EnrolledSubjectModel, String> instructorCol;
+    private TableColumn<EnrolledSubjectModel, String> finalGradeCol;
     
     @FXML
     private Label schoolYearLabel;
     
     @FXML
-    private Label totalUnitsLabel;
-      @FXML
-    private Button printStudyLoadBtn;
+    private Label gpaLabel;
     
     @FXML
-    private Button exportStudyLoadBtn;
+    private Button printGradeReportBtn;
     
     @FXML
-    private Button refreshStudyLoadBtn;
+    private Button exportGradeReportBtn;
     
-    // Observable list for enrolled subjects
-    private ObservableList<EnrolledSubjectModel> enrolledSubjectsData = FXCollections.observableArrayList();
+    @FXML
+    private Button refreshGradesBtn;
     
-    private StudentModel student;    /**
-     * Initialize the study load controller with student data
+    // Observable list for enrolled subjects with grades
+    private ObservableList<EnrolledSubjectModel> gradesData = FXCollections.observableArrayList();
+    
+    private StudentModel student;
+
+    /**
+     * Initialize the e-grade controller with student data
      */
     @FXML
     public void initialize() {
@@ -71,19 +74,20 @@ public class StudyLoadController {
         int currentYear = now.getYear();
         schoolYearLabel.setText("School Year " + currentYear + "-" + (currentYear + 1));
         
-        System.out.println("StudyLoadController initialized");
+        System.out.println("EGradeController initialized");
         
         // Try to get student data from session
         StudentModel sessionStudent = SessionManager.getInstance().getCurrentStudent();
         if (sessionStudent != null) {
-            System.out.println("Found student data in session, loading study load");
+            System.out.println("Found student data in session, loading grades");
             this.student = sessionStudent;
-            loadEnrolledSubjects();
+            loadGrades();
         } else {
             System.out.println("No student data found in session yet");
         }
     }
-      /**
+    
+    /**
      * Set student data for this controller
      */
     public void setStudentData(StudentModel student) {
@@ -96,65 +100,58 @@ public class StudyLoadController {
             this.student = sessionStudent;
         }
         
-        loadEnrolledSubjects();
+        loadGrades();
     }
-      /**
+    
+    /**
      * Initialize table columns
-     */    private void initializeTableColumns() {
+     */
+    private void initializeTableColumns() {
         // Set up column cell value factories
         subjectCodeCol.setCellValueFactory(new PropertyValueFactory<>("subjectCode"));
         subjectNameCol.setCellValueFactory(new PropertyValueFactory<>("subjectName"));
         subjectUnitsCol.setCellValueFactory(new PropertyValueFactory<>("units"));
-        scheduleCol.setCellValueFactory(new PropertyValueFactory<>("schedule"));
-        instructorCol.setCellValueFactory(new PropertyValueFactory<>("instructor"));
+        midtermGradeCol.setCellValueFactory(new PropertyValueFactory<>("midtermGrade"));
+        finalGradeCol.setCellValueFactory(new PropertyValueFactory<>("finalGrade"));
         
         // Style the columns for better text visibility
         String columnStyle = "-fx-alignment: CENTER-LEFT; -fx-text-fill: #333333;";
         subjectCodeCol.setStyle(columnStyle);
         subjectNameCol.setStyle(columnStyle);
         subjectUnitsCol.setStyle(columnStyle);
-        scheduleCol.setStyle(columnStyle);
-        instructorCol.setStyle(columnStyle);
         
-        // Add midterm and final grade columns
-        TableColumn<EnrolledSubjectModel, String> midtermGradeCol = new TableColumn<>("Midterm");
-        midtermGradeCol.setCellValueFactory(new PropertyValueFactory<>("midtermGrade"));
-        midtermGradeCol.setPrefWidth(80);
-        midtermGradeCol.setStyle("-fx-alignment: CENTER; -fx-text-fill: #333333;");
+        // Grade columns with center alignment
+        String gradeColumnStyle = "-fx-alignment: CENTER; -fx-text-fill: #333333;";
+        midtermGradeCol.setStyle(gradeColumnStyle);
+        finalGradeCol.setStyle(gradeColumnStyle);
         
-        TableColumn<EnrolledSubjectModel, String> finalGradeCol = new TableColumn<>("Final");
-        finalGradeCol.setCellValueFactory(new PropertyValueFactory<>("finalGrade"));
-        finalGradeCol.setPrefWidth(80);
-        finalGradeCol.setStyle("-fx-alignment: CENTER; -fx-text-fill: #333333;");
-        
-        // Add the new columns to the table
-        subjectsTable.getColumns().addAll(midtermGradeCol, finalGradeCol);
-          // Apply custom styling for table cells
-        subjectsTable.setRowFactory(tv -> {
-            javafx.scene.control.TableRow<EnrolledSubjectModel> row = new javafx.scene.control.TableRow<>();
+        // Apply custom styling for table cells
+        gradesTable.setRowFactory(tv -> {
+            TableRow<EnrolledSubjectModel> row = new TableRow<>();
             row.setStyle("-fx-text-fill: #333333;");
             return row;
         });
         
         // Set additional styling to ensure text is visible
-        subjectsTable.setStyle("-fx-text-fill: #333333; -fx-control-inner-background: white;");
+        gradesTable.setStyle("-fx-text-fill: #333333; -fx-control-inner-background: white;");
         
         // Set table data
-        subjectsTable.setItems(enrolledSubjectsData);
-    }    /**
-     * Load enrolled subjects from student data
-     * Prioritizes academic history information which comes from login response
+        gradesTable.setItems(gradesData);
+    }
+
+    /**
+     * Load grades data for the student
      */
-    public void loadEnrolledSubjects() {
+    public void loadGrades() {
         if (student == null) {
-            System.out.println("Cannot load study load: student data is null");
+            System.out.println("Cannot load grades: student data is null");
             return;
         }
         
-        System.out.println("Loading enrolled subjects for student ID: " + student.getStudentId());
+        System.out.println("Loading grades for student ID: " + student.getStudentId());
         
         // Clear existing data
-        enrolledSubjectsData.clear();
+        gradesData.clear();
         
         // First try to get the most recent data from SessionManager
         StudentModel currentStudent = SessionManager.getInstance().getCurrentStudent();
@@ -162,7 +159,8 @@ public class StudyLoadController {
             System.out.println("Using latest student data from session manager");
             student = currentStudent;
         }
-          // Check for academic history first (this will be populated from the login response)
+        
+        // Check for academic history first (this will be populated from the login response)
         StudentModel.AcademicTerm currentTerm = student.getCurrentAcademicTerm();
         
         // Add detailed debug info about the academic term
@@ -178,7 +176,7 @@ public class StudyLoadController {
         }
         
         if (currentTerm != null && currentTerm.getSubjects() != null && !currentTerm.getSubjects().isEmpty()) {
-            System.out.println("Loading study load from academic history. Found " + 
+            System.out.println("Loading grades from academic history. Found " + 
                 currentTerm.getSubjects().size() + " subjects.");
             
             // Convert academic history subjects to EnrolledSubjectModel
@@ -190,7 +188,7 @@ public class StudyLoadController {
                                    ", Final: " + subjectGrade.getFinalGradeFormatted());
                 
                 // Create EnrolledSubjectModel with full grade information from academic history
-                enrolledSubjectsData.add(new EnrolledSubjectModel(
+                gradesData.add(new EnrolledSubjectModel(
                     subjectGrade.getEdpCode(),
                     subjectGrade.getSubjectName(),
                     subjectGrade.getUnits(),
@@ -201,50 +199,38 @@ public class StudyLoadController {
                     subjectGrade.getFinalGradeFormatted()
                 ));
             }
-              updateTotalUnits();
+            
+            calculateGPA();
             // Ensure text visibility after loading data
             ensureTextVisibility();
-            System.out.println("Successfully loaded " + enrolledSubjectsData.size() + " subjects from academic history");
+            System.out.println("Successfully loaded " + gradesData.size() + " subjects with grades from academic history");
             return;
         }
         
-        // If academic history is empty or not available, check enrolledSubjects list
-        // This should never happen if login response includes academic history, but provides a fallback
-        System.out.println("No academic history found, checking enrolled subjects list...");
-        List<SubjectModel> enrolledSubjects = student.getEnrolledSubjects();
-        
-        if (enrolledSubjects != null && !enrolledSubjects.isEmpty()) {
-            System.out.println("Found " + enrolledSubjects.size() + " enrolled subjects in student model");
-            // Convert to EnrolledSubjectModel and add to observable list
-            for (SubjectModel subject : enrolledSubjects) {
-                enrolledSubjectsData.add(new EnrolledSubjectModel(subject));
-            }
-            updateTotalUnits();        } else {
-            // If no subjects found in student model either, show a message
-            System.out.println("No enrolled subjects found in student data");                // Attempt to load from API before showing the message
-            if (student != null && student.getStudentId() != null) {
-                System.out.println("Attempting to load study load from API for student ID: " + student.getStudentId());
-                loadStudyLoadFromAPI(student.getStudentId());
-                return; // Exit the method, since loadStudyLoadFromAPI will handle the UI updates
-            }
-            
-            // Only show this message if we have no way to load data
-            javafx.application.Platform.runLater(() -> {
-                Alert alert = new Alert(Alert.AlertType.INFORMATION);
-                alert.setTitle("No Subjects Found");
-                alert.setHeaderText(null);
-                alert.setContentText("No enrolled subjects found for the current term.");
-                alert.showAndWait();
-            });
+        // If no subjects found in student data, attempt to load from API
+        if (student != null && student.getStudentId() != null) {
+            System.out.println("Attempting to load grades from API for student ID: " + student.getStudentId());
+            loadGradesFromAPI(student.getStudentId());
+            return; // Exit the method, since loadGradesFromAPI will handle the UI updates
         }
+        
+        // Only show this message if we have no way to load data
+        javafx.application.Platform.runLater(() -> {
+            Alert alert = new Alert(Alert.AlertType.INFORMATION);
+            alert.setTitle("No Grades Found");
+            alert.setHeaderText(null);
+            alert.setContentText("No grade records found for the current term.");
+            alert.showAndWait();
+        });
     }
     
     /**
-     * Load student's study load from the API
+     * Load student's grades from the API
      * 
      * @param studentId The student ID
-     */    private void loadStudyLoadFromAPI(String studentId) {
-        // Use the new dedicated study load endpoint
+     */
+    private void loadGradesFromAPI(String studentId) {
+        // Use the student study load endpoint which contains grade information
         AuthService.getStudentStudyLoad(studentId)
             .thenAccept(response -> {
                 javafx.application.Platform.runLater(() -> {
@@ -262,7 +248,8 @@ public class StudyLoadController {
                                 // Extract grades if available in the API response
                                 String midtermGrade = "N/A";
                                 String finalGrade = "N/A";
-                                  // Extract grades more reliably from the API response
+                                
+                                // Extract grades more reliably from the API response
                                 if (subjectObj.has("midtermGrade") && !subjectObj.get("midtermGrade").isJsonNull()) {
                                     Double midterm = subjectObj.get("midtermGrade").getAsDouble();
                                     midtermGrade = String.format("%.2f", midterm);
@@ -279,33 +266,36 @@ public class StudyLoadController {
                                     Double finals = subjectObj.get("finalGrade").getAsDouble();
                                     finalGrade = String.format("%.2f", finals);
                                 }
-                                  // Create model with grades if available
-                                EnrolledSubjectModel enrolledSubject = new EnrolledSubjectModel(
+                                
+                                // Create model with grades if available
+                                EnrolledSubjectModel subjectWithGrades = new EnrolledSubjectModel(
                                     subject.getEdpCode(),
                                     subject.getSubjectName(),
                                     subject.getUnits(),
-                                    "TBA", // Schedule often not provided
+                                    "TBA", // Schedule not needed for e-grade view
                                     subject.getTeacherAssigned() != null ? subject.getTeacherAssigned() : "TBA",
                                     subject.getEdpCode(),
                                     midtermGrade,
                                     finalGrade
                                 );
                                 
-                                enrolledSubjectsData.add(enrolledSubject);
+                                gradesData.add(subjectWithGrades);
                                 student.enrollSubject(subject);
                             }
-                        }                        // Update total units
-                        updateTotalUnits();
+                        }
+                        
+                        // Calculate GPA
+                        calculateGPA();
                         // Ensure text visibility after loading data
                         ensureTextVisibility();
-                        System.out.println("Study load loaded successfully with " + 
-                            enrolledSubjectsData.size() + " subjects.");
+                        System.out.println("Grades loaded successfully with " + 
+                            gradesData.size() + " subjects.");
                         
                         // If we successfully loaded subjects but UI previously showed "no subjects" message
-                        if (!enrolledSubjectsData.isEmpty()) {
-                            // Update the UI to show the subjects table
-                            subjectsTable.setVisible(true);
-                            System.out.println("Updated UI to show subjects table with " + enrolledSubjectsData.size() + " subjects");
+                        if (!gradesData.isEmpty()) {
+                            // Update the UI to show the grades table
+                            gradesTable.setVisible(true);
+                            System.out.println("Updated UI to show grades table with " + gradesData.size() + " subjects");
                         }
                     } else {
                         // If the new endpoint fails, fall back to the old one
@@ -316,7 +306,7 @@ public class StudyLoadController {
             })
             .exceptionally(ex -> {
                 javafx.application.Platform.runLater(() -> {
-                    System.err.println("Error loading study load: " + ex.getMessage() + 
+                    System.err.println("Error loading grades: " + ex.getMessage() + 
                         ". Falling back to old endpoint.");
                     fallbackToEnrolledSubjectsAPI(studentId);
                 });
@@ -341,68 +331,149 @@ public class StudyLoadController {
                             if (element.isJsonObject()) {
                                 JsonObject subjectObj = element.getAsJsonObject();
                                 SubjectModel subject = new SubjectModel(subjectObj);
-                                enrolledSubjectsData.add(new EnrolledSubjectModel(subject));
+                                gradesData.add(new EnrolledSubjectModel(subject));
                                 student.enrollSubject(subject);
                             }
                         }
                         
-                        // Update total units
-                        updateTotalUnits();
+                        // Calculate GPA
+                        calculateGPA();
+                        // Ensure text visibility
+                        ensureTextVisibility();
                     }
                 });
             })
-                .exceptionally(ex -> {
-                    javafx.application.Platform.runLater(() -> {
-                        showAlert(Alert.AlertType.ERROR, "Error", 
-                            "Could not load enrolled subjects: " + ex.getMessage());
-                    });
-                    return null;
+            .exceptionally(ex -> {
+                javafx.application.Platform.runLater(() -> {
+                    showAlert(Alert.AlertType.ERROR, "Error", 
+                        "Could not load grades: " + ex.getMessage());
                 });
-        }
-    
-    
-    /**
-     * Update the total units label
-     */
-    private void updateTotalUnits() {
-        int total = 0;
-        for (EnrolledSubjectModel subject : enrolledSubjectsData) {
-            total += subject.getUnits();
-        }
-        totalUnitsLabel.setText(String.valueOf(total));
+                return null;
+            });
     }
     
     /**
-     * Handle print study load button click
+     * Calculate GPA based on loaded grades
+     */
+    private void calculateGPA() {
+        if (gradesData.isEmpty()) {
+            gpaLabel.setText("0.00");
+            return;
+        }
+        
+        double totalPoints = 0;
+        int totalUnits = 0;
+        
+        for (EnrolledSubjectModel subject : gradesData) {
+            int units = subject.getUnits();
+            totalUnits += units;
+            
+            // Convert final grade string to double for calculation
+            try {
+                if (!subject.getFinalGrade().equals("N/A")) {
+                    double grade = Double.parseDouble(subject.getFinalGrade());
+                    // Convert to 4.0 scale
+                    double points = convertToGPAScale(grade);
+                    totalPoints += (points * units);
+                }
+            } catch (NumberFormatException e) {
+                // Skip this subject if grade is not a valid number
+                System.out.println("Could not parse grade for " + subject.getSubjectName() + ": " + subject.getFinalGrade());
+            }
+        }
+        
+        double gpa = (totalUnits > 0) ? (totalPoints / totalUnits) : 0.0;
+        gpaLabel.setText(String.format("%.2f", gpa));
+    }
+    
+    /**
+     * Convert percentage grade to 4.0 scale
+     */
+    private double convertToGPAScale(double percentageGrade) {
+        // Simple conversion - can be adjusted based on institution's grading scale
+        if (percentageGrade >= 96) return 4.0;
+        if (percentageGrade >= 90) return 3.5;
+        if (percentageGrade >= 84) return 3.0;
+        if (percentageGrade >= 78) return 2.5;
+        if (percentageGrade >= 72) return 2.0;
+        if (percentageGrade >= 66) return 1.5;
+        if (percentageGrade >= 60) return 1.0;
+        return 0.0;
+    }
+    
+    /**
+     * Apply consistent styling to all UI elements to ensure text visibility
+     * Called after loading data to make sure text is visible against white background
+     */
+    private void ensureTextVisibility() {
+        // Apply styling to labels
+        if (schoolYearLabel != null) {
+            schoolYearLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        }
+        
+        if (gpaLabel != null) {
+            gpaLabel.setStyle("-fx-text-fill: #333333;");
+        }
+        
+        // Apply styling to table
+        if (gradesTable != null) {
+            // Table styling
+            gradesTable.setStyle("-fx-text-fill: #333333; -fx-control-inner-background: white;");
+            
+            // Column styling
+            String columnStyle = "-fx-alignment: CENTER-LEFT; -fx-text-fill: #333333;";
+            if (subjectCodeCol != null) subjectCodeCol.setStyle(columnStyle);
+            if (subjectNameCol != null) subjectNameCol.setStyle(columnStyle);
+            if (subjectUnitsCol != null) subjectUnitsCol.setStyle(columnStyle);
+            
+            String gradeStyle = "-fx-alignment: CENTER; -fx-text-fill: #333333;";
+            if (midtermGradeCol != null) midtermGradeCol.setStyle(gradeStyle);
+            if (finalGradeCol != null) finalGradeCol.setStyle(gradeStyle);
+            
+            // Row styling
+            gradesTable.setRowFactory(tv -> {
+                TableRow<EnrolledSubjectModel> row = new TableRow<>();
+                row.setStyle("-fx-text-fill: #333333;");
+                return row;
+            });
+        }
+    }
+    
+    /**
+     * Handle print grade report button click
      */
     @FXML
-    public void handlePrintStudyLoad() {
+    public void handlePrintGradeReport() {
         showAlert(Alert.AlertType.INFORMATION, "Print Function", 
             "Print functionality will be implemented in a future update.");
     }
     
     /**
-     * Handle export study load button click
-     */    @FXML
-    public void handleExportStudyLoad() {
+     * Handle export grade report button click
+     */
+    @FXML
+    public void handleExportGradeReport() {
         showAlert(Alert.AlertType.INFORMATION, "Export Function", 
             "Export to PDF functionality will be implemented in a future update.");
-    }    /**
-     * Handle refresh study load button click
-     */    @FXML
-    public void handleRefreshStudyLoad() {
+    }
+    
+    /**
+     * Handle refresh grades button click
+     */
+    @FXML
+    public void handleRefreshGrades() {
         if (student == null || student.getStudentId() == null) {
             showAlert(Alert.AlertType.ERROR, "Error", 
-                "No student data available to refresh study load.");
+                "No student data available to refresh grades.");
             return;
         }
         
-        System.out.println("Refreshing study load for student: " + student.getName() + 
+        System.out.println("Refreshing grades for student: " + student.getName() + 
                           " (ID: " + student.getStudentId() + ")");
         
         // Show loading message
-        enrolledSubjectsData.clear();
-        totalUnitsLabel.setText("Loading...");
+        gradesData.clear();
+        gpaLabel.setText("Loading...");
         
         // Get the latest student data from session
         StudentModel sessionStudent = SessionManager.getInstance().getCurrentStudent();
@@ -413,12 +484,9 @@ public class StudyLoadController {
             System.out.println("No updated student data found in session, using existing data");
         }
         
-        // Make an API call to get the latest study load data
-        System.out.println("Making API call to get latest study load data");
-        loadStudyLoadFromAPI(student.getStudentId());
-        
-        // Note that the rest of the processing will happen in the API callback
-        // We don't need to show alerts here as they will be handled in the callback
+        // Make an API call to get the latest grade data
+        System.out.println("Making API call to get latest grade data");
+        loadGradesFromAPI(student.getStudentId());
     }
     
     /**
@@ -430,41 +498,5 @@ public class StudyLoadController {
         alert.setHeaderText(null);
         alert.setContentText(message);
         alert.showAndWait();
-    }
-
-    /**
-     * Apply consistent styling to all UI elements to ensure text visibility
-     * Called after loading data to make sure text is visible against white background
-     */
-    private void ensureTextVisibility() {
-        // Apply styling to labels
-        if (schoolYearLabel != null) {
-            schoolYearLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333333;");
-        }
-        
-        if (totalUnitsLabel != null) {
-            totalUnitsLabel.setStyle("-fx-text-fill: #333333;");
-        }
-        
-        // Apply styling to table
-        if (subjectsTable != null) {
-            // Table styling
-            subjectsTable.setStyle("-fx-text-fill: #333333; -fx-control-inner-background: white;");
-            
-            // Column styling
-            String columnStyle = "-fx-alignment: CENTER-LEFT; -fx-text-fill: #333333;";
-            if (subjectCodeCol != null) subjectCodeCol.setStyle(columnStyle);
-            if (subjectNameCol != null) subjectNameCol.setStyle(columnStyle);
-            if (subjectUnitsCol != null) subjectUnitsCol.setStyle(columnStyle);
-            if (scheduleCol != null) scheduleCol.setStyle(columnStyle);
-            if (instructorCol != null) instructorCol.setStyle(columnStyle);
-            
-            // Row styling
-            subjectsTable.setRowFactory(tv -> {
-                javafx.scene.control.TableRow<EnrolledSubjectModel> row = new javafx.scene.control.TableRow<>();
-                row.setStyle("-fx-text-fill: #333333;");
-                return row;
-            });
-        }
     }
 }

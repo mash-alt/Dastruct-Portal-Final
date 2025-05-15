@@ -1,6 +1,7 @@
 package org.finalproject.loginregisterfx;
 
 import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import javafx.application.Platform;
 import javafx.fxml.FXML;
@@ -14,6 +15,7 @@ import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.TableColumn;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableView;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
@@ -33,8 +35,7 @@ public class StudentController {
     
     @FXML
     private Label studentIDLabel;
-    
-    @FXML
+      @FXML
     private Button dashboardBtn;
     
     @FXML
@@ -45,9 +46,22 @@ public class StudentController {
     
     @FXML
     private Button eGradeBtn;
+      @FXML
+    private Button logoutBtn;
     
     @FXML
-    private Button logoutBtn;
+    private Button refreshProfileBtn;
+      @FXML
+    private Button refreshStudyLoadBtn;
+    
+    @FXML
+    private Button refreshGradesBtn;
+    
+    @FXML
+    private Button printGradeReportBtn;
+    
+    @FXML
+    private Button exportGradeReportBtn;
     
     @FXML
     private StackPane contentArea;
@@ -85,7 +99,16 @@ public class StudentController {
     private Label emailValue;
     
     @FXML
+    private Label phoneNumberValue;
+    
+    @FXML
+    private Label addressValue;
+    
+    @FXML
     private Label courseValue;
+    
+    @FXML
+    private Label semesterValue;
     
     @FXML
     private Label yearLevelValue;
@@ -111,8 +134,7 @@ public class StudentController {
     
     @FXML
     private TableColumn<EnrolledSubjectModel, Integer> subjectUnitsCol;
-    
-    @FXML
+      @FXML
     private TableColumn<EnrolledSubjectModel, String> scheduleCol;
     
     @FXML
@@ -124,33 +146,97 @@ public class StudentController {
     @FXML
     private Label totalUnitsLabel;
     
+    // E-Grade table fields
+    @FXML
+    private TableView<EnrolledSubjectModel> gradesTable;
+    
+    @FXML
+    private TableColumn<EnrolledSubjectModel, String> gradeSubjectCodeCol;
+    
+    @FXML
+    private TableColumn<EnrolledSubjectModel, String> gradeSubjectNameCol;
+    
+    @FXML
+    private TableColumn<EnrolledSubjectModel, Integer> gradeSubjectUnitsCol;
+    
+    @FXML
+    private TableColumn<EnrolledSubjectModel, String> midtermGradeCol;
+    
+    @FXML
+    private TableColumn<EnrolledSubjectModel, String> finalGradeCol;
+    
+    @FXML
+    private Label gradesSchoolYearLabel;
+    
+    @FXML
+    private Label gpaLabel;
+    
     // Observable list for enrolled subjects
     private ObservableList<EnrolledSubjectModel> enrolledSubjectsData = FXCollections.observableArrayList();
     
     // Store student data
-    private StudentModel studentData;    
-      @FXML
+    private StudentModel studentData;    @FXML
     public void initialize() {
+        System.out.println("Initializing StudentController...");
+        
         // Set default content visibility
         profileContent.setVisible(true);
         enrollmentContent.setVisible(false);
         studyLoadContent.setVisible(false);
-        eGradeContent.setVisible(false);
+        
+        // Make sure eGradeContent is properly initialized
+        if (eGradeContent != null) {
+            eGradeContent.setVisible(false);
+        } else {
+            System.out.println("Note: eGradeContent not loaded yet, this is normal if the tab isn't created");
+        }
         
         // Set default active button style
         updateNavButtonStyles("profile");
         
-        // Initialize the study load table columns
-        subjectCodeCol.setCellValueFactory(cellData -> cellData.getValue().subjectCodeProperty());
-        subjectNameCol.setCellValueFactory(cellData -> cellData.getValue().subjectNameProperty());
-        subjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
-        scheduleCol.setCellValueFactory(cellData -> cellData.getValue().scheduleProperty());
-        instructorCol.setCellValueFactory(cellData -> cellData.getValue().instructorProperty());
-        
-        // Set the items source for the table
-        subjectsTable.setItems(enrolledSubjectsData);
-        
-        // Check if there's an active session and initialize data
+        // Verify that all FXML elements are properly loaded
+        verifyFXMLElements();
+          // Initialize the study load table columns
+        if (subjectCodeCol != null && subjectNameCol != null && subjectUnitsCol != null && 
+            scheduleCol != null && instructorCol != null) {
+            
+            // Set cell value factories
+            subjectCodeCol.setCellValueFactory(cellData -> cellData.getValue().subjectCodeProperty());
+            subjectNameCol.setCellValueFactory(cellData -> cellData.getValue().subjectNameProperty());
+            subjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
+            scheduleCol.setCellValueFactory(cellData -> cellData.getValue().scheduleProperty());
+            instructorCol.setCellValueFactory(cellData -> cellData.getValue().instructorProperty());
+            
+            // Apply column styling for visibility
+            String columnStyle = "-fx-alignment: CENTER-LEFT; -fx-text-fill: #333333;";
+            subjectCodeCol.setStyle(columnStyle);
+            subjectNameCol.setStyle(columnStyle);
+            subjectUnitsCol.setStyle(columnStyle);
+            scheduleCol.setStyle(columnStyle);
+            instructorCol.setStyle(columnStyle);
+            
+            // Set the items source for the table
+            if (subjectsTable != null) {
+                subjectsTable.setItems(enrolledSubjectsData);
+                
+                // Make sure table has proper styling
+                subjectsTable.setStyle("-fx-text-fill: #333333; -fx-control-inner-background: white;");
+                
+                // Apply row styling
+                subjectsTable.setRowFactory(tv -> {
+                    javafx.scene.control.TableRow<EnrolledSubjectModel> row = new javafx.scene.control.TableRow<>();
+                    row.setStyle("-fx-text-fill: #333333;");
+                    return row;
+                });
+                
+                System.out.println("Study load table initialized successfully with text styling");
+            } else {
+                System.err.println("ERROR: subjectsTable is null");
+            }
+        } else {
+            System.err.println("ERROR: One or more table columns are null");
+        }
+          // Check if there's an active session and initialize data
         if (SessionManager.getInstance().isAuthenticated() && 
             SessionManager.getInstance().getCurrentStudent() != null) {
             this.studentData = SessionManager.getInstance().getCurrentStudent();
@@ -160,39 +246,169 @@ public class StudentController {
                 (studentData != null ? studentData.getName() + " (" + studentData.getStudentId() + ")" : "NULL"));
             
             if (studentData != null) {
-                updateStudentInfo();
-                updateEnrollmentStatus();
+                // Set some initial placeholder values to check visibility
+                if (fullNameValue != null) {
+                    fullNameValue.setText("Loading data...");
+                    fullNameValue.setStyle("-fx-text-fill: #000000;"); // Force black text
+                }
+                
+                // Make sure UI elements are properly loaded before updating
+                Platform.runLater(() -> {
+                    updateStudentInfo();
+                    updateEnrollmentStatus();
+                    System.out.println("Student data successfully displayed");
+                    
+                    // Double check the text color after update
+                    if (fullNameValue != null) {
+                        fullNameValue.setStyle("-fx-text-fill: #000000;"); // Ensure black text
+                    }
+                    if (studentIdValue != null) {
+                        studentIdValue.setStyle("-fx-text-fill: #000000;");
+                    }
+                    if (emailValue != null) {
+                        emailValue.setStyle("-fx-text-fill: #000000;");
+                    }
+                    if (courseValue != null) {
+                        courseValue.setStyle("-fx-text-fill: #000000;");
+                    }
+                    if (yearLevelValue != null) {
+                        yearLevelValue.setStyle("-fx-text-fill: #000000;");
+                    }
+                    if (sectionValue != null) {
+                        sectionValue.setStyle("-fx-text-fill: #000000;");
+                    }
+                    if (subjectsEnrolledValue != null) {
+                        subjectsEnrolledValue.setStyle("-fx-text-fill: #000000;");
+                    }
+                });
             } else {
                 System.err.println("ERROR: Student data is null even though session is authenticated");
+                // You might want to redirect to login page here
+                showAlert(Alert.AlertType.ERROR, "Session Error", "Could not load student data. Please log in again.");
             }
         } else {
             System.err.println("WARNING: No authenticated session found during initialization");
             // You might want to redirect to login page here
+            showAlert(Alert.AlertType.WARNING, "Session Expired", "Your session has expired. Please log in again.");
         }
-        
-        // Get current school year
+          // Get current school year
         java.time.LocalDate now = java.time.LocalDate.now();
         int currentYear = now.getYear();
+        System.out.println("Current academic year: " + currentYear + "-" + (currentYear + 1));
         
-        // Set event handlers for navigation buttons
-        // These are already set in FXML with onAction attributes
+        // Set current academic year in enrollment view if the label exists
+        if (schoolYearLabel != null) {
+            schoolYearLabel.setText("School Year " + currentYear + "-" + (currentYear + 1));
+        }
+          // If we have a refresh profile button, set its styling
+        if (refreshProfileBtn != null) {
+            refreshProfileBtn.getStyleClass().add("export-button");
+        }
+        
+        // If we have a refresh study load button, set its styling
+        if (refreshStudyLoadBtn != null) {
+            refreshStudyLoadBtn.getStyleClass().add("export-button");
+        }
+        
+        // Style enrollment and study load elements - ensure text is visible
+        if (enrollmentStatusLabel != null) {
+            enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #333333;");
+        }
+        
+        if (schoolYearLabel != null) {
+            schoolYearLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        }
+        
+        if (totalUnitsLabel != null) {
+            totalUnitsLabel.setStyle("-fx-text-fill: #333333;");
+        }
+        
+        System.out.println("StudentController initialization complete");
+    }
+    
+    /**
+     * Verify that all required FXML elements are properly loaded
+     * This helps with debugging UI issues
+     */
+    private void verifyFXMLElements() {
+        StringBuilder missingElements = new StringBuilder();
+          // Check profile view elements
+        if (fullNameValue == null) missingElements.append("fullNameValue, ");
+        if (studentIdValue == null) missingElements.append("studentIdValue, ");
+        if (emailValue == null) missingElements.append("emailValue, ");
+        if (phoneNumberValue == null) missingElements.append("phoneNumberValue, ");
+        if (addressValue == null) missingElements.append("addressValue, ");
+        if (courseValue == null) missingElements.append("courseValue, ");
+        if (semesterValue == null) missingElements.append("semesterValue, ");
+        if (yearLevelValue == null) missingElements.append("yearLevelValue, ");
+        if (sectionValue == null) missingElements.append("sectionValue, ");
+        
+        // Check enrollment elements
+        if (enrollmentStatusLabel == null) missingElements.append("enrollmentStatusLabel, ");
+        if (startEnrollmentBtn == null) missingElements.append("startEnrollmentBtn, ");
+        if (nextYearEnrollmentBtn == null) missingElements.append("nextYearEnrollmentBtn, ");
+        
+        // Check sidebar elements
+        if (studentNameLabel == null) missingElements.append("studentNameLabel, ");
+        if (studentIDLabel == null) missingElements.append("studentIDLabel, ");
+        
+        // Check if any elements are missing
+        if (missingElements.length() > 0) {
+            System.err.println("WARNING: The following FXML elements were not loaded: " + 
+                               missingElements.toString());
+        } else {
+            System.out.println("All essential FXML elements are successfully loaded");
+        }
     }
     
     /**
      * Initialize student data from login response
      * @param userData JsonObject containing student data from API
-     */
-    public void initializeStudentData(JsonObject userData) {
+     */    public void initializeStudentData(JsonObject userData) {
         try {
             // Create StudentModel from the response
             System.out.println("Initializing student data from: " + (userData != null ? userData.toString() : "null JSON"));
+              // Check for academic history and enrolled subjects
+            if (userData != null) {
+                if (userData.has("academicHistory")) {
+                    JsonArray academicHistory = userData.getAsJsonArray("academicHistory");
+                    System.out.println("Found academic history with " + academicHistory.size() + " terms");
+                    
+                    if (academicHistory.size() > 0 && academicHistory.get(0).isJsonObject()) {
+                        JsonObject currentTerm = academicHistory.get(0).getAsJsonObject();
+                        if (currentTerm.has("subjects")) {
+                            JsonArray subjects = currentTerm.getAsJsonArray("subjects");
+                            System.out.println("Current term has " + subjects.size() + " subjects");
+                            
+                            // Log details about each subject to help with debugging
+                            for (int i = 0; i < subjects.size() && i < 5; i++) { // Log up to first 5 subjects
+                                if (subjects.get(i).isJsonObject()) {
+                                    JsonObject subject = subjects.get(i).getAsJsonObject();
+                                    String name = subject.has("subjectName") ? subject.get("subjectName").getAsString() : "Unknown";
+                                    String code = subject.has("edpCode") ? subject.get("edpCode").getAsString() : "Unknown";
+                                    
+                                    System.out.println("Subject: " + name + " (Code: " + code + ")");
+                                    
+                                    // Check if grades exist
+                                    if (subject.has("midtermGrade") && !subject.get("midtermGrade").isJsonNull()) {
+                                        System.out.println("  Midterm grade: " + subject.get("midtermGrade").getAsString());
+                                    }
+                                    if (subject.has("finalGrade") && !subject.get("finalGrade").isJsonNull()) {
+                                        System.out.println("  Final grade: " + subject.get("finalGrade").getAsString());
+                                    }
+                                }
+                            }
+                        }
+                    }
+                }
+                
+                if (userData.has("enrolledSubjects")) {
+                    System.out.println("Found enrolledSubjects list with " + 
+                        userData.getAsJsonArray("enrolledSubjects").size() + " subject IDs");
+                }
+            }
             
-            // Sample data format:
-            // {"_id":"6822f1c0db950f6a1b200f41","name":"test account","email":"test@test.com","studentId":"ucb-62476646",
-            // "bday":"2025-05-12T00:00:00.000Z","course":"BSIT","address":"test","phoneNumber":"0912345678",
-            // "isEnrolled":false,"enrolledSubjects":[],"academicHistory":[],"createdAt":"2025-05-13T07:16:16.769Z",
-            // "updatedAt":"2025-05-13T07:16:16.769Z","__v":0}
-            
+            // Create the student model
             this.studentData = new StudentModel(userData);
             
             // Save student in session for persistence
@@ -219,7 +435,72 @@ public class StudentController {
             e.printStackTrace();
         }
     }
-    
+      /**
+     * Refresh student profile data from API
+     */    @FXML
+    public void refreshStudentProfile() {
+        if (studentData == null || studentData.getStudentId() == null) {
+            System.err.println("ERROR: Cannot refresh profile - student data or ID is null");
+            showAlert(Alert.AlertType.ERROR, "Error", "Could not refresh student profile data");
+            return;
+        }
+        
+        // Show loading indicator
+        String studentId = studentData.getStudentId();
+        System.out.println("Refreshing profile data for student ID: " + studentId);
+        
+        // Ensure the student ID has the proper format for the API
+        if (studentId != null && !studentId.startsWith("ucb-")) {
+            studentId = "ucb-" + studentId;
+            System.out.println("Added ucb- prefix to student ID for API call: " + studentId);
+        }
+        
+        // Call API to get latest student data
+        final String finalStudentId = studentId;
+        AuthService.getStudentProfile(finalStudentId)
+            .thenAccept(response -> {
+                Platform.runLater(() -> {
+                    System.out.println("Profile refresh response received: " + response);
+                    // The response structure might be the student object directly, or nested under 'student'
+                    JsonObject studentJson = null;
+                    
+                    if (response != null) {
+                        if (response.has("student")) {
+                            studentJson = response.getAsJsonObject("student");
+                        } else {
+                            // If the student data is at the root level
+                            studentJson = response;
+                        }
+                        
+                        if (studentJson != null) {
+                            // Update student model with fresh data
+                            studentData = new StudentModel(studentJson);
+                            
+                            // Save updated data in session
+                            SessionManager.getInstance().updateStudentData(studentJson);
+                            
+                            // Update UI with refreshed data
+                            updateStudentInfo();
+                            
+                            showAlert(Alert.AlertType.INFORMATION, "Success", "Profile data refreshed successfully");
+                            return;
+                        }
+                    }
+                    
+                    // If we reach here, something went wrong
+                    System.err.println("ERROR: Invalid response format when refreshing profile");
+                    showAlert(Alert.AlertType.ERROR, "Error", "Could not refresh student profile data");
+                });
+            })
+            .exceptionally(ex -> {
+                Platform.runLater(() -> {
+                    System.err.println("ERROR refreshing profile: " + ex.getMessage());
+                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to connect to server. Please check if the server is running and try again.");
+                });
+                return null;
+            });
+    }
+
     /**
      * Update UI with student information
      */
@@ -241,62 +522,169 @@ public class StudentController {
         System.out.println("Enrolled: " + studentData.isEnrolled());
         System.out.println("Enrolled Subjects Count: " + studentData.getEnrolledSubjects().size());
         
-        // Update sidebar profile
-        studentNameLabel.setText(studentData.getName());
-        studentIDLabel.setText(studentData.getStudentId());
-        
-        // Update profile content
-        if (fullNameValue != null) {
-            fullNameValue.setText(studentData.getName());
-        } else {
-            System.err.println("ERROR: fullNameValue label is null");
-        }
-        
-        if (studentIdValue != null) {
-            studentIdValue.setText(studentData.getStudentId());
-        } else {
-            System.err.println("ERROR: studentIdValue label is null");
-        }
-        
-        if (emailValue != null) {
-            emailValue.setText(studentData.getEmail());
-        } else {
-            System.err.println("ERROR: emailValue label is null");
-        }
-        
-        if (courseValue != null) {
-            courseValue.setText(studentData.getCourse());
-        } else {
-            System.err.println("ERROR: courseValue label is null");
-        }
-        
-        if (yearLevelValue != null) {
-            yearLevelValue.setText(studentData.getYearLevelString());
-        } else {
-            System.err.println("ERROR: yearLevelValue label is null");
-        }
-        
-        if (sectionValue != null) {
-            sectionValue.setText(studentData.getSection());
-        } else {
-            System.err.println("ERROR: sectionValue label is null");
-        }
-        
-        // Update GPA and enrolled subjects
-        if (gpaValue != null) {
-            gpaValue.setText(studentData.getFormattedGPA());
-        } else {
-            System.err.println("ERROR: gpaValue label is null");
-        }
-        
-        int enrolledSubjectsCount = studentData.getEnrolledSubjects().size();
-        if (subjectsEnrolledValue != null) {
-            subjectsEnrolledValue.setText(String.valueOf(enrolledSubjectsCount));
-        } else {
-            System.err.println("ERROR: subjectsEnrolledValue label is null");
-        }
-        
-        System.out.println("Student info update completed");
+        // Make sure this runs on the JavaFX Application Thread
+        Platform.runLater(() -> {
+            try {
+                // Update sidebar profile
+                if (studentNameLabel != null) {
+                    studentNameLabel.setText(studentData.getName());
+                }
+                
+                if (studentIDLabel != null) {
+                    studentIDLabel.setText(studentData.getStudentId());
+                }
+                
+                // Update profile content with explicit text color                
+                if (fullNameValue != null) {
+                    fullNameValue.setText(studentData.getName());
+                    fullNameValue.setStyle("-fx-text-fill: #000000;");
+                    
+                    // Double-check that the text is visible
+                    System.out.println("Setting fullNameValue to: " + studentData.getName());
+                    System.out.println("fullNameValue style: " + fullNameValue.getStyle());
+                    System.out.println("fullNameValue parent background: " + 
+                                      (fullNameValue.getParent() != null ? 
+                                       fullNameValue.getParent().getStyle() : "null parent"));
+                } else {
+                    System.err.println("ERROR: fullNameValue label is null");
+                }
+                
+                if (studentIdValue != null) {
+                    studentIdValue.setText(studentData.getStudentId());
+                    studentIdValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting studentIdValue to: " + studentData.getStudentId());
+                } else {
+                    System.err.println("ERROR: studentIdValue label is null");
+                }
+                  if (emailValue != null) {
+                    emailValue.setText(studentData.getEmail());
+                    emailValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting emailValue to: " + studentData.getEmail());
+                } else {
+                    System.err.println("ERROR: emailValue label is null");
+                }
+                
+                // Set phone number
+                if (phoneNumberValue != null) {
+                    phoneNumberValue.setText(studentData.getPhoneNumber());
+                    phoneNumberValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting phoneNumberValue to: " + studentData.getPhoneNumber());
+                } else {
+                    System.err.println("ERROR: phoneNumberValue label is null");
+                }
+                
+                // Set address
+                if (addressValue != null) {
+                    addressValue.setText(studentData.getAddress());
+                    addressValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting addressValue to: " + studentData.getAddress());
+                } else {
+                    System.err.println("ERROR: addressValue label is null");
+                }
+                
+                // Set phone number
+                if (phoneNumberValue != null) {
+                    phoneNumberValue.setText(studentData.getPhoneNumber());
+                    phoneNumberValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting phoneNumberValue to: " + studentData.getPhoneNumber());
+                } else {
+                    System.err.println("ERROR: phoneNumberValue label is null");
+                }
+                
+                // Set address
+                if (addressValue != null) {
+                    addressValue.setText(studentData.getAddress());
+                    addressValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting addressValue to: " + studentData.getAddress());
+                } else {
+                    System.err.println("ERROR: addressValue label is null");
+                }
+                  if (courseValue != null) {
+                    courseValue.setText(studentData.getCourse());
+                    courseValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting courseValue to: " + studentData.getCourse());
+                } else {
+                    System.err.println("ERROR: courseValue label is null");
+                }
+                  // Set semester
+                if (semesterValue != null) {
+                    // Get semester directly from the student model
+                    String semester = studentData.getSemester();
+                    semesterValue.setText(semester);
+                    semesterValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting semesterValue to: " + semester);
+                } else {
+                    System.err.println("ERROR: semesterValue label is null");
+                }
+                
+                if (yearLevelValue != null) {
+                    yearLevelValue.setText(studentData.getYearLevelString());
+                    yearLevelValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting yearLevelValue to: " + studentData.getYearLevelString());
+                } else {
+                    System.err.println("ERROR: yearLevelValue label is null");
+                }
+                
+                if (sectionValue != null) {
+                    sectionValue.setText(studentData.getSection());
+                    sectionValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting sectionValue to: " + studentData.getSection());
+                } else {
+                    System.err.println("ERROR: sectionValue label is null");
+                }
+                  // Update GPA and enrolled subjects
+                if (gpaValue != null) {
+                    gpaValue.setText(studentData.getFormattedGPA());
+                    // GPA already has a custom color in the FXML
+                    System.out.println("Setting gpaValue to: " + studentData.getFormattedGPA());
+                } else {
+                    System.err.println("ERROR: gpaValue label is null");
+                }                  // Count enrolled subjects - try all available sources and use the maximum count
+                int enrolledSubjectsCount = 0;
+                
+                // Check all possible sources and use the highest number found
+                // 1. Academic history (most reliable source)
+                if (studentData.getCurrentAcademicTerm() != null && 
+                    studentData.getCurrentAcademicTerm().getSubjects() != null &&
+                    !studentData.getCurrentAcademicTerm().getSubjects().isEmpty()) {
+                    int historyCount = studentData.getCurrentAcademicTerm().getSubjects().size();
+                    enrolledSubjectsCount = Math.max(enrolledSubjectsCount, historyCount);
+                    System.out.println("Academic history subject count: " + historyCount);
+                }
+                
+                // 2. Check enrolled subject IDs
+                if (studentData.getEnrolledSubjectIds() != null && !studentData.getEnrolledSubjectIds().isEmpty()) {
+                    int idsCount = studentData.getEnrolledSubjectIds().size();
+                    enrolledSubjectsCount = Math.max(enrolledSubjectsCount, idsCount);
+                    System.out.println("Enrolled subject IDs count: " + idsCount);
+                }
+                
+                // 3. Check enrolled subjects objects
+                if (studentData.getEnrolledSubjects() != null && !studentData.getEnrolledSubjects().isEmpty()) {
+                    int subjectsCount = studentData.getEnrolledSubjects().size();
+                    enrolledSubjectsCount = Math.max(enrolledSubjectsCount, subjectsCount);
+                    System.out.println("Enrolled subjects objects count: " + subjectsCount);
+                }
+                
+                System.out.println("Final subjects count determined: " + enrolledSubjectsCount);
+                
+                if (subjectsEnrolledValue != null) {
+                    subjectsEnrolledValue.setText(String.valueOf(enrolledSubjectsCount));
+                    subjectsEnrolledValue.setStyle("-fx-text-fill: #000000;");
+                    System.out.println("Setting subjectsEnrolledValue to: " + enrolledSubjectsCount);
+                } else {
+                    System.err.println("ERROR: subjectsEnrolledValue label is null");
+                }
+                
+                // Also update enrollment status since it's related to student info
+                updateEnrollmentStatus();
+                
+                System.out.println("Student info update completed");
+            } catch (Exception e) {
+                System.err.println("Error updating student info UI: " + e.getMessage());
+                e.printStackTrace();
+            }
+        });
     }
     
     /**
@@ -338,8 +726,7 @@ public class StudentController {
         updateNavButtonStyles("studyLoad");
         loadEnrolledSubjects();
     }
-    
-    /**
+      /**
      * Switch to e-grade content
      */
     @FXML
@@ -350,6 +737,7 @@ public class StudentController {
         eGradeContent.setVisible(true);
         
         updateNavButtonStyles("eGrade");
+        loadGrades();
     }
     
     /**
@@ -426,93 +814,146 @@ public class StudentController {
             showAlert(Alert.AlertType.ERROR, "Logout Error", "Failed to open logout dialog: " + e.getMessage());
         }
     }
-    
-    /**
+      /**
      * Handle the start enrollment button click
      */
     @FXML
-    public void handleStartEnrollment() {
-        // Show confirmation dialog
-        Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
-        confirmAlert.setTitle("Confirm Enrollment");
-        confirmAlert.setHeaderText("Start Enrollment Process");
-        confirmAlert.setContentText("Are you sure you want to begin the enrollment process for the 2025-2026 school year?");
-        
-        confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
-                try {
-                    // Update UI to show process is starting
-                    enrollmentStatusLabel.setText("Status: Enrollment in Progress");
-                    enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #f39c12;");
-                    
-                    // Disable start button
-                    startEnrollmentBtn.setDisable(true);
-                    startEnrollmentBtn.setText("Enrollment in Progress...");
-                    
-                    // Get session manager and current student ID
-                    String studentId = studentData.getId();
+public void handleStartEnrollment() {
+    // Get current year for the enrollment process
+    java.time.LocalDate now = java.time.LocalDate.now();
+    int currentYear = now.getYear();
+    String academicYear = currentYear + "-" + (currentYear + 1);
 
-                    // Make the API call using EnrollmentService
-                    org.finalproject.loginregisterfx.Service.EnrollmentService.enrollStudent(studentId)
-                        .thenAccept(response2 -> {
-                            // Update on JavaFX application thread
-                            javafx.application.Platform.runLater(() -> {
-                                // Check if enrollment was successful
-                                if (response2.has("success") && response2.get("success").getAsBoolean()) {
-                                    // Update student model
-                                    studentData.setEnrolled(true);
-                                    
-                                    // Update session manager
-                                    org.finalproject.loginregisterfx.Service.SessionManager.getInstance().updateEnrollmentStatus(true);
-                                    
-                                    // Update UI to reflect enrollment status
-                                    updateEnrollmentStatus();
-                                    
-                                    // Show success message and offer to view enrolled subjects
-                                    showEnrollmentSuccessDialog();
-                                } else {
-                                    // Show error message
-                                    String errorMessage = response2.has("message") ? 
-                                        response2.get("message").getAsString() : "An unknown error occurred";
-                                    showAlert(Alert.AlertType.ERROR, "Enrollment Failed", errorMessage);
-                                    
-                                    // Reset UI
-                                    enrollmentStatusLabel.setText("Status: Not Enrolled");
-                                    enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
-                                    startEnrollmentBtn.setDisable(false);
-                                    startEnrollmentBtn.setText("Start Enrollment Process");
-                                }
-                            });
-                        })
-                        .exceptionally(ex -> {
-                            // Handle exceptions
-                            javafx.application.Platform.runLater(() -> {
-                                showAlert(Alert.AlertType.ERROR, "Error", 
-                                    "Could not complete enrollment: " + ex.getMessage());
-                                
-                                // Reset UI
-                                enrollmentStatusLabel.setText("Status: Not Enrolled");
-                                enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
-                                startEnrollmentBtn.setDisable(false);
-                                startEnrollmentBtn.setText("Start Enrollment Process");
-                            });
-                            return null;
-                        });
-                    
-                } catch (Exception e) {
-                    e.printStackTrace();
-                    showAlert(Alert.AlertType.ERROR, "Error", "Could not start enrollment process: " + e.getMessage());
-                    
-                    // Reset UI
-                    enrollmentStatusLabel.setText("Status: Not Enrolled");
-                    enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
-                    startEnrollmentBtn.setDisable(false);
-                    startEnrollmentBtn.setText("Start Enrollment Process");
+    // Show confirmation dialog with academic year details
+    Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
+    confirmAlert.setTitle("Confirm Enrollment");
+    confirmAlert.setHeaderText("Start Enrollment Process");
+    confirmAlert.setContentText("Are you sure you want to begin the enrollment process for the " + 
+                               academicYear + " school year?\n\n" +
+                               "This will register you for classes based on your program requirements.");
+
+    confirmAlert.showAndWait().ifPresent(response -> {
+        if (response == javafx.scene.control.ButtonType.OK) {
+            try {
+                // Update UI to show process is starting
+                enrollmentStatusLabel.setText("Status: Enrollment in Progress");
+                enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #f39c12;");
+
+                // Disable start button
+                startEnrollmentBtn.setDisable(true);
+                startEnrollmentBtn.setText("Enrollment in Progress...");                // Get session manager and current student ID 
+                // Make sure to use the studentId field (ucb-XXXXX) instead of the MongoDB _id field
+                String studentId = studentData.getStudentId();
+                
+                System.out.println("Student ID for enrollment: " + studentId + ", format format: ucb-XXXXX");
+                // Ensure the student ID has the proper format
+                if (studentId != null && !studentId.startsWith("ucb-")) {
+                    studentId = "ucb-" + studentId;
+                    System.out.println("Added ucb- prefix to student ID: " + studentId);
                 }
+
+                // Show processing indicator
+                showAlert(Alert.AlertType.INFORMATION, "Processing", 
+                    "Your enrollment request is being processed. This may take a moment...");                // Make the API call using EnrollmentService - using the current semester
+                System.out.println("Making enrollment API call with studentId: " + studentId);
+                System.out.println("Current auth token: " + org.finalproject.loginregisterfx.Service.AuthService.getAuthToken());
+                
+                org.finalproject.loginregisterfx.Service.EnrollmentService.enrollStudent(
+                        studentId, null, academicYear, "First"
+                ).thenAccept(response2 -> {
+                    // Update on JavaFX application thread
+                    javafx.application.Platform.runLater(() -> {                // Check if enrollment was successful (response has a message and no error field)
+                        if (response2.has("message") && !response2.has("error")) {
+                            // Update student model
+                            studentData.setEnrolled(true);
+
+                            // If the response contains the updated student data, update our local model
+                            if (response2.has("student")) {
+                                // Update enrollment status from the response
+                                JsonObject studentObj = response2.getAsJsonObject("student");
+                                if (studentObj.has("isEnrolled")) {
+                                    studentData.setEnrolled(studentObj.get("isEnrolled").getAsBoolean());
+                                }
+                                
+                                // Print received student data for debugging
+                                System.out.println("Received student data from successful enrollment response: " + studentObj.toString());
+                            }
+
+                            // Update session manager
+                            org.finalproject.loginregisterfx.Service.SessionManager.getInstance().updateEnrollmentStatus(true);
+
+                            // Refresh student data from the server to get enrolled subjects
+                            refreshStudentData();
+
+                            // Update UI to reflect enrollment status
+                            updateEnrollmentStatus();
+
+                            // Show success message and offer to view enrolled subjects
+                            showEnrollmentSuccessDialog();
+                        } else {
+                            // Show error message with details and suggestions
+                            String errorMessage = response2.has("error") ? 
+                                response2.get("error").getAsString() : "An unknown error occurred";
+
+                            Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                            errorAlert.setTitle("Enrollment Failed");
+                            errorAlert.setHeaderText("Could not complete enrollment");
+                            errorAlert.setContentText(errorMessage + "\n\n" +
+                                "Possible reasons:\n" +
+                                "- You may have outstanding requirements\n" +
+                                "- There might be a problem with course availability\n" +
+                                "- System connectivity issues\n\n" +
+                                "Please contact the registrar's office for assistance.");
+                            errorAlert.showAndWait();
+
+                            // Reset UI
+                            enrollmentStatusLabel.setText("Status: Not Enrolled");
+                            enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
+                            startEnrollmentBtn.setDisable(false);
+                            startEnrollmentBtn.setText("Start Enrollment Process");
+                        }
+                    });
+                })                                .exceptionally(ex -> {
+                            // Handle exceptions with more detailed information
+                            javafx.application.Platform.runLater(() -> {
+                                String errorMessage = ex.getMessage();
+                                System.err.println("Enrollment error: " + errorMessage);
+                                
+                                // Check if it's a connection error
+                                boolean isConnectionError = errorMessage != null && 
+                                    (errorMessage.contains("Connection refused") || 
+                                     errorMessage.contains("connect timed out") ||
+                                     errorMessage.contains("Unable to connect"));
+                                
+                                if (isConnectionError) {
+                                    showAlert(Alert.AlertType.ERROR, "Connection Error", 
+                                        "Could not connect to the enrollment server. Please check your internet connection and try again.");
+                                } else {
+                                    showAlert(Alert.AlertType.ERROR, "Enrollment Error",
+                                "Could not complete enrollment: " + errorMessage);
+                        }
+                        // Reset UI
+                        enrollmentStatusLabel.setText("Status: Not Enrolled");
+                        enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
+                        startEnrollmentBtn.setDisable(false);
+                        startEnrollmentBtn.setText("Start Enrollment Process");
+                    });
+                    return null;
+                });
+
+            } catch (Exception e) {
+                e.printStackTrace();
+                showAlert(Alert.AlertType.ERROR, "Error", "Could not start enrollment process: " + e.getMessage());
+
+                // Reset UI
+                enrollmentStatusLabel.setText("Status: Not Enrolled");
+                enrollmentStatusLabel.setStyle("-fx-font-weight: bold; -fx-text-fill: #e74c3c;");
+                startEnrollmentBtn.setDisable(false);
+                startEnrollmentBtn.setText("Start Enrollment Process");
             }
-        });
-    }
-    
+        }
+    });
+}
     /**
      * Shows a success dialog after enrollment with an option to view subjects
      */
@@ -585,48 +1026,80 @@ private void showEnrollmentSuccessDialog() {
         alert.setContentText(message);
         alert.showAndWait();
     }
-    
-    /**
+      /**
      * Handle next year enrollment button click
+     * This method manages the pre-enrollment process for the next academic year
      */
     @FXML
     public void handleNextYearEnrollment() {
-        // Show confirmation dialog
+        // Check current enrollment status first
+        if (!studentData.isEnrolled()) {
+            showAlert(Alert.AlertType.WARNING, "Not Eligible", 
+                "You must be enrolled in the current academic year before you can pre-enroll for next year.");
+            return;
+        }
+        
+        // Calculate next academic year for display
+        java.time.LocalDate now = java.time.LocalDate.now();
+        int currentYear = now.getYear();
+        String nextAcademicYear = (currentYear + 1) + "-" + (currentYear + 2);
+        
+        // Show confirmation dialog with next year information
         Alert confirmAlert = new Alert(Alert.AlertType.CONFIRMATION);
         confirmAlert.setTitle("Confirm Next Year Enrollment");
         confirmAlert.setHeaderText("Start Next Year Enrollment Process");
-        confirmAlert.setContentText("Are you sure you want to begin the enrollment process for the 2026-2027 school year?");
+        confirmAlert.setContentText("Are you sure you want to begin the enrollment process for the " + 
+                                   nextAcademicYear + " school year?\n\n" +
+                                   "This will pre-register you for next year's subjects based on your current academic progress.");
         
         confirmAlert.showAndWait().ifPresent(response -> {
-            if (response == javafx.scene.control.ButtonType.OK) {
-                try {
+            if (response == javafx.scene.control.ButtonType.OK) {                try {
                     // Disable button while processing
                     nextYearEnrollmentBtn.setDisable(true);
                     nextYearEnrollmentBtn.setText("Processing...");
                     
                     // Get student ID from current session
-                    String studentId = studentData.getId();
+                    String studentId = studentData.getStudentId();
                     
-                    // Make the API call using EnrollmentService
+                    // Show processing indicator
+                    showAlert(Alert.AlertType.INFORMATION, "Processing", 
+                        "Your pre-enrollment request is being processed. This may take a moment...");
+                      // Make the API call using EnrollmentService
                     org.finalproject.loginregisterfx.Service.EnrollmentService.preEnrollForNextYear(studentId)
                         .thenAccept(response2 -> {
                             // Update on JavaFX application thread
                             javafx.application.Platform.runLater(() -> {
-                                // Check if pre-enrollment was successful
-                                if (response2.has("success") && response2.get("success").getAsBoolean()) {
-                                    // Show success message
-                                    showAlert(Alert.AlertType.INFORMATION, "Next Year Enrollment Confirmed", 
-                                        "Your enrollment for the 2026-2027 school year has been confirmed. " +
-                                        "You will receive more information before the start of the next school year.");
-                                    
-                                    // Update button to show success
+                                // Check if pre-enrollment was successful (response has message and no error field)
+                                if (response2.has("message") && !response2.has("error")) {
+                                    // Show detailed success message with next steps
+                                    Alert successAlert = new Alert(Alert.AlertType.INFORMATION);
+                                    successAlert.setTitle("Next Year Enrollment Confirmed");
+                                    successAlert.setHeaderText("Pre-Enrollment Successful");
+                                    successAlert.setContentText(
+                                        "Your enrollment for the " + nextAcademicYear + " school year has been confirmed.\n\n" +
+                                        "Next Steps:\n" +
+                                        "1. Check your email for confirmation details\n" +
+                                        "2. Complete any outstanding financial requirements\n" +
+                                        "3. Update your personal information if needed\n\n" +
+                                        "Your subject schedule will be available before the start of the next academic year."
+                                    );
+                                    successAlert.showAndWait();
+                                      // Update button to show success
                                     nextYearEnrollmentBtn.setText("Enrolled for Next Year");
                                     nextYearEnrollmentBtn.setDisable(true);
-                                } else {
-                                    // Show error message
-                                    String errorMessage = response2.has("message") ? 
-                                        response2.get("message").getAsString() : "An unknown error occurred";
-                                    showAlert(Alert.AlertType.ERROR, "Pre-Enrollment Failed", errorMessage);
+                                    nextYearEnrollmentBtn.setStyle("-fx-text-fill: white;"); // Ensure text is visible
+                                    
+                                    // Store pre-enrollment status somewhere if needed
+                                    // This could be stored in StudentModel if needed                                } else {
+                                    // Show error message with details
+                                    String errorMessage = response2.has("error") ? 
+                                        response2.get("error").getAsString() : "An unknown error occurred";
+                                    
+                                    Alert errorAlert = new Alert(Alert.AlertType.ERROR);
+                                    errorAlert.setTitle("Pre-Enrollment Failed");
+                                    errorAlert.setHeaderText("Could not complete pre-enrollment");
+                                    errorAlert.setContentText(errorMessage + "\n\nPlease contact the registrar's office for assistance.");
+                                    errorAlert.showAndWait();
                                     
                                     // Reset button
                                     nextYearEnrollmentBtn.setDisable(false);
@@ -637,8 +1110,9 @@ private void showEnrollmentSuccessDialog() {
                         .exceptionally(ex -> {
                             // Handle exceptions
                             javafx.application.Platform.runLater(() -> {
-                                showAlert(Alert.AlertType.ERROR, "Error", 
-                                    "Could not complete next year enrollment: " + ex.getMessage());
+                                showAlert(Alert.AlertType.ERROR, "Connection Error", 
+                                    "Could not complete next year enrollment: " + ex.getMessage() + 
+                                    "\n\nPlease check your internet connection and try again.");
                                 
                                 // Reset button
                                 nextYearEnrollmentBtn.setDisable(false);
@@ -648,7 +1122,9 @@ private void showEnrollmentSuccessDialog() {
                         });
                 } catch (Exception e) {
                     e.printStackTrace();
-                    showAlert(Alert.AlertType.ERROR, "Error", "Could not complete next year enrollment: " + e.getMessage());
+                    showAlert(Alert.AlertType.ERROR, "System Error", 
+                        "Could not complete next year enrollment due to a system error: " + e.getMessage() + 
+                        "\n\nPlease contact technical support for assistance.");
                     
                     // Reset button
                     nextYearEnrollmentBtn.setDisable(false);
@@ -675,29 +1151,27 @@ private void showEnrollmentSuccessDialog() {
             // Switch back to enrollment tab
             switchToEnrollment();
             return;
-        }
-
-        // Set school year
+        }        // Set school year
         if (schoolYearLabel != null) {
             java.time.LocalDate now = java.time.LocalDate.now();
             int currentYear = now.getYear();
             schoolYearLabel.setText("School Year " + currentYear + "-" + (currentYear + 1));
+            schoolYearLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333333;"); // Ensure visible text
         } else {
             System.err.println("ERROR: schoolYearLabel is null");
-        }
-
-        // Load enrolled subjects from API
-        String studentId = studentData.getId();
+        }// Load enrolled subjects from API
+        // Use studentId field (ucb-XXXXX) instead of MongoDB _id field
+        String studentId = studentData.getStudentId();
         System.out.println("Loading enrolled subjects for student ID: " + studentId);
         
         EnrollmentService.getEnrolledSubjects(studentId)
             .thenAccept(response -> {
                 javafx.application.Platform.runLater(() -> {
                     try {
-                        if (response != null && response.has("subjects") && response.get("subjects").isJsonArray()) {
+                        if (response != null && response.has("studyLoad") && response.get("studyLoad").isJsonArray()) {
                             System.out.println("Received subjects response successfully");
                             // Process the enrolled subjects
-                            processEnrolledSubjects(response.getAsJsonArray("subjects"));
+                            processEnrolledSubjects(response.getAsJsonArray("studyLoad"));
                         } else {
                             System.err.println("Invalid response format or empty subjects array");
                             if (response != null) {
@@ -721,8 +1195,7 @@ private void showEnrollmentSuccessDialog() {
                 return null;
             });
     }
-    
-    /**
+      /**
      * Process enrolled subjects from the API response
      * 
      * @param subjectsArray JsonArray of enrolled subjects
@@ -786,14 +1259,143 @@ private void showEnrollmentSuccessDialog() {
             subjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
             scheduleCol.setCellValueFactory(cellData -> cellData.getValue().scheduleProperty());
             instructorCol.setCellValueFactory(cellData -> cellData.getValue().instructorProperty());
+        }        // Update count and total units labels
+        if (subjectsEnrolledValue != null) {
+            subjectsEnrolledValue.setText(String.valueOf(count));
+            subjectsEnrolledValue.setStyle("-fx-text-fill: #333333;"); // Ensure visible text
         }
-          // Update count and total units labels
-        subjectsEnrolledValue.setText(String.valueOf(count));
+        
         if (totalUnitsLabel != null) {
             totalUnitsLabel.setText(String.valueOf(totalUnits));
+            totalUnitsLabel.setStyle("-fx-text-fill: #333333;"); // Ensure visible text
         }
     }
     
+    /**
+     * Refresh student data from the backend API
+     * This can be called after enrollment or any other action that might change student data
+     */
+    public void refreshStudentData() {        // Check if we have valid student data with ID
+        if (studentData == null || studentData.getStudentId() == null || studentData.getStudentId().isEmpty()) {
+            System.err.println("Cannot refresh student data: Invalid student ID");
+            return;
+        }
+        
+        String studentId = studentData.getStudentId();
+        System.out.println("Refreshing student data for ID: " + studentId);
+        
+        // Show loading indicator
+        showAlert(Alert.AlertType.INFORMATION, "Refreshing Data", "Loading your latest information...");
+        
+        // Call the API to get updated student data
+        AuthService.getStudentProfile(studentId)
+            .thenAccept(response -> {
+                Platform.runLater(() -> {
+                    try {
+                        if (response != null && response.has("student")) {
+                            // Update student model with fresh data
+                            JsonObject studentJson = response.getAsJsonObject("student");
+                            studentData = new StudentModel(studentJson);
+                            
+                            // Save updated data in session
+                            SessionManager.getInstance().updateStudentData(studentJson);                            
+                            // Update UI with refreshed data
+                            updateStudentInfo();
+                              // Also refresh study load if we're on the study load tab
+                            if (studyLoadContent.isVisible()) {
+                                refreshStudyLoadData(studentData.getStudentId());
+                            }
+                            
+                            System.out.println("Student data refreshed successfully");
+                        } else {
+                            System.err.println("Failed to refresh student data - Invalid response");
+                            showAlert(Alert.AlertType.ERROR, "Refresh Failed", 
+                                "Could not refresh your profile data. Please try again later.");
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error refreshing student data: " + e.getMessage());
+                        e.printStackTrace();
+                        showAlert(Alert.AlertType.ERROR, "Error", 
+                            "An error occurred while refreshing your data: " + e.getMessage());
+                    }
+                });
+            })
+            .exceptionally(ex -> {
+                Platform.runLater(() -> {
+                    System.err.println("Exception refreshing student data: " + ex.getMessage());
+                    ex.printStackTrace();
+                    showAlert(Alert.AlertType.ERROR, "Connection Error", 
+                        "Could not connect to the server to refresh your data. Please check your connection.");
+                });
+                return null;
+            });
+    }
+    
+    /**
+     * Refresh study load data from the API
+     * 
+     * @param studentId The student ID to refresh data for
+     */
+    private void refreshStudyLoadData(String studentId) {
+        if (studentId == null || studentId.isEmpty()) {
+            System.err.println("Cannot refresh study load: Invalid student ID");
+            return;
+        }
+        
+        System.out.println("Refreshing study load data for student ID: " + studentId);
+        
+        // Call the new study load API endpoint
+        AuthService.getStudentStudyLoad(studentId)
+            .thenAccept(response -> {
+                Platform.runLater(() -> {
+                    try {
+                        if (response != null && response.has("studyLoad") && response.get("studyLoad").isJsonArray()) {
+                            JsonArray subjectsArray = response.getAsJsonArray("studyLoad");
+                            
+                            // Update enrolled subjects in student model
+                            studentData.clearEnrolledSubjects();
+                            
+                            // Add each subject to the student model
+                            for (JsonElement element : subjectsArray) {
+                                if (element.isJsonObject()) {
+                                    JsonObject subjectObj = element.getAsJsonObject();
+                                    SubjectModel subject = new SubjectModel(subjectObj);
+                                    studentData.enrollSubject(subject);
+                                }
+                            }
+                            
+                            // Update study load view if it's currently displayed
+                            if (studyLoadContent.isVisible()) {
+                                System.out.println("Updating study load view with " + 
+                                                  studentData.getEnrolledSubjects().size() + " subjects");
+                                // Reload enrolled subjects in the UI
+                                loadEnrolledSubjects();
+                            }
+                            
+                            System.out.println("Study load data refreshed successfully");
+                        } else {
+                            System.err.println("Failed to refresh study load - Invalid response format");
+                            // Try fallback to old endpoint
+                            EnrollmentService.getEnrolledSubjects(studentId)
+                                .thenAccept(fallbackResponse -> {
+                                    if (fallbackResponse != null && fallbackResponse.has("subjects")) {
+                                        // Handle fallback response (similar to above)
+                                        System.out.println("Using fallback endpoint for study load");
+                                    }
+                                });
+                        }
+                    } catch (Exception e) {
+                        System.err.println("Error refreshing study load: " + e.getMessage());
+                        e.printStackTrace();
+                    }
+                });
+            })
+            .exceptionally(ex -> {
+                System.err.println("Failed to refresh study load: " + ex.getMessage());
+                ex.printStackTrace();
+                return null;
+            });
+    }
     
     /**
      * Handle print study load button click
@@ -811,5 +1413,314 @@ private void showEnrollmentSuccessDialog() {
     public void handleExportStudyLoad() {
         showAlert(Alert.AlertType.INFORMATION, "Export Function", 
             "Export to PDF functionality will be implemented in a future update.");
+    }
+    
+    /**
+     * Handle refresh study load button click
+     * This method is called when the user clicks the Refresh Study Load button
+     */    @FXML
+    public void handleRefreshStudyLoad() {
+        if (studentData == null || studentData.getStudentId() == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", 
+                "No student data available to refresh study load.");
+            return;
+        }
+        
+        // Show loading indicator
+        showAlert(Alert.AlertType.INFORMATION, "Refreshing Data", "Loading your latest study load information...");
+        
+        // Call the method to refresh the study load data        refreshStudyLoadData(studentData.getStudentId());
+    }
+
+    /**
+     * Load grades when switching to the e-grade tab
+     */
+    private void loadGrades() {
+        if (studentData == null) {
+            System.out.println("Cannot load grades: student data is null");
+            return;
+        }
+        
+        // Show message if not enrolled
+        if (!studentData.isEnrolled()) {
+            showAlert(Alert.AlertType.INFORMATION, "Not Enrolled", 
+                "You are not currently enrolled. No grades to display.");
+            return;
+        }
+        
+        // Set school year for grades view
+        if (gradesSchoolYearLabel != null) {
+            java.time.LocalDate now = java.time.LocalDate.now();
+            int currentYear = now.getYear();
+            gradesSchoolYearLabel.setText("School Year " + currentYear + "-" + (currentYear + 1));
+        } else {
+            System.err.println("WARNING: gradesSchoolYearLabel is null");
+        }
+        
+        // Initialize E-Grade table columns if needed
+        initializeGradesTableColumns();
+        
+        // Clear existing grades data
+        ObservableList<EnrolledSubjectModel> gradesData = FXCollections.observableArrayList();
+        
+        // Load student's current academic term
+        StudentModel.AcademicTerm currentTerm = studentData.getCurrentAcademicTerm();
+        
+        if (currentTerm != null && currentTerm.getSubjects() != null && !currentTerm.getSubjects().isEmpty()) {
+            System.out.println("Loading grades from academic history. Found " + 
+                currentTerm.getSubjects().size() + " subjects.");
+            
+            // Convert academic history subjects to EnrolledSubjectModel
+            for (StudentModel.SubjectGrade subjectGrade : currentTerm.getSubjects()) {
+                gradesData.add(new EnrolledSubjectModel(
+                    subjectGrade.getEdpCode(),
+                    subjectGrade.getSubjectName(),
+                    subjectGrade.getUnits(),
+                    "TBA", // Schedule not needed for e-grade view
+                    "TBA", // Instructor not needed for e-grade view
+                    subjectGrade.getSubjectId(),
+                    subjectGrade.getMidtermGradeFormatted(),
+                    subjectGrade.getFinalGradeFormatted()
+                ));
+            }
+            
+            // Set the table data
+            gradesTable.setItems(gradesData);
+            
+            // Calculate and update GPA
+            calculateGPA(gradesData);
+            
+            // Ensure text visibility in the UI
+            ensureGradesTextVisibility();
+            
+            return;
+        }
+        
+        // If academic history is empty, try loading from API
+        String studentId = studentData.getStudentId();
+        System.out.println("Loading grades for student ID: " + studentId);
+        
+        // Use the student study load endpoint which contains grade information
+        AuthService.getStudentStudyLoad(studentId)
+            .thenAccept(response -> {
+                Platform.runLater(() -> {
+                    if (response != null && response.has("studyLoad") && response.get("studyLoad").isJsonArray()) {
+                        JsonArray subjectsArray = response.getAsJsonArray("studyLoad");
+                        
+                        for (JsonElement element : subjectsArray) {
+                            if (element.isJsonObject()) {
+                                JsonObject subjectObj = element.getAsJsonObject();
+                                
+                                SubjectModel subject = new SubjectModel(subjectObj);
+                                
+                                // Extract grades if available
+                                String midtermGrade = "N/A";
+                                String finalGrade = "N/A";
+                                
+                                if (subjectObj.has("midtermGrade") && !subjectObj.get("midtermGrade").isJsonNull()) {
+                                    Double midterm = subjectObj.get("midtermGrade").getAsDouble();
+                                    midtermGrade = String.format("%.2f", midterm);
+                                }
+                                
+                                if (subjectObj.has("finalGrade") && !subjectObj.get("finalGrade").isJsonNull()) {
+                                    Double finals = subjectObj.get("finalGrade").getAsDouble();
+                                    finalGrade = String.format("%.2f", finals);
+                                }
+                                
+                                // Create model with grades
+                                gradesData.add(new EnrolledSubjectModel(
+                                    subject.getEdpCode(),
+                                    subject.getSubjectName(),
+                                    subject.getUnits(),
+                                    "TBA", // Schedule not needed for e-grade view
+                                    "TBA", // Instructor not needed for e-grade view
+                                    subject.getEdpCode(),
+                                    midtermGrade,
+                                    finalGrade
+                                ));
+                            }
+                        }
+                        
+                        // Set the table data
+                        gradesTable.setItems(gradesData);
+                        
+                        // Calculate and update GPA
+                        calculateGPA(gradesData);
+                        
+                        // Ensure text visibility
+                        ensureGradesTextVisibility();
+                    } else {
+                        showAlert(Alert.AlertType.INFORMATION, "No Grades Found", 
+                            "No grade records found for the current term.");
+                    }
+                });
+            })
+            .exceptionally(ex -> {
+                Platform.runLater(() -> {
+                    showAlert(Alert.AlertType.ERROR, "Error", 
+                        "Could not load grades: " + ex.getMessage());
+                });
+                return null;
+            });
+    }
+    
+    /**
+     * Initialize the grades table columns
+     */
+    private void initializeGradesTableColumns() {
+        if (gradeSubjectCodeCol == null || gradeSubjectNameCol == null || 
+            gradeSubjectUnitsCol == null || midtermGradeCol == null || finalGradeCol == null) {
+            System.err.println("ERROR: E-Grade table columns are not properly initialized");
+            return;
+        }
+        
+        // Set up column cell value factories if not already set
+        gradeSubjectCodeCol.setCellValueFactory(cellData -> cellData.getValue().subjectCodeProperty());
+        gradeSubjectNameCol.setCellValueFactory(cellData -> cellData.getValue().subjectNameProperty());
+        gradeSubjectUnitsCol.setCellValueFactory(cellData -> cellData.getValue().unitsProperty().asObject());
+        midtermGradeCol.setCellValueFactory(cellData -> cellData.getValue().midtermGradeProperty());
+        finalGradeCol.setCellValueFactory(cellData -> cellData.getValue().finalGradeProperty());
+        
+        // Apply column styling for visibility
+        String columnStyle = "-fx-alignment: CENTER-LEFT; -fx-text-fill: #333333;";
+        gradeSubjectCodeCol.setStyle(columnStyle);
+        gradeSubjectNameCol.setStyle(columnStyle);
+        gradeSubjectUnitsCol.setStyle(columnStyle);
+        
+        String gradeStyle = "-fx-alignment: CENTER; -fx-text-fill: #333333;";
+        midtermGradeCol.setStyle(gradeStyle);
+        finalGradeCol.setStyle(gradeStyle);
+        
+        // Apply styling to table rows
+        if (gradesTable != null) {
+            gradesTable.setRowFactory(tv -> {
+                TableRow<EnrolledSubjectModel> row = new TableRow<>();
+                row.setStyle("-fx-text-fill: #333333;");
+                return row;
+            });
+            
+            // Set additional styling to ensure text is visible
+            gradesTable.setStyle("-fx-text-fill: #333333; -fx-control-inner-background: white;");
+        }
+    }
+    
+    /**
+     * Calculate GPA based on loaded grades
+     */
+    private void calculateGPA(ObservableList<EnrolledSubjectModel> gradesData) {
+        if (gradesData.isEmpty() || gpaLabel == null) {
+            if (gpaLabel != null) gpaLabel.setText("0.00");
+            return;
+        }
+        
+        double totalPoints = 0;
+        int totalUnits = 0;
+        
+        for (EnrolledSubjectModel subject : gradesData) {
+            int units = subject.getUnits();
+            totalUnits += units;
+            
+            // Convert final grade string to double for calculation
+            try {
+                if (!subject.getFinalGrade().equals("N/A")) {
+                    double grade = Double.parseDouble(subject.getFinalGrade());
+                    // Convert to 4.0 scale
+                    double points = convertToGPAScale(grade);
+                    totalPoints += (points * units);
+                }
+            } catch (NumberFormatException e) {
+                // Skip this subject if grade is not a valid number
+                System.out.println("Could not parse grade for " + subject.getSubjectName() + ": " + subject.getFinalGrade());
+            }
+        }
+        
+        double gpa = (totalUnits > 0) ? (totalPoints / totalUnits) : 0.0;
+        gpaLabel.setText(String.format("%.2f", gpa));
+        
+        // Also update the GPA value in the profile section if available
+        if (gpaValue != null) {
+            gpaValue.setText(String.format("%.2f", gpa));
+        }
+    }
+    
+    /**
+     * Convert percentage grade to 4.0 scale
+     */
+    private double convertToGPAScale(double percentageGrade) {
+        // Simple conversion - can be adjusted based on institution's grading scale
+        if (percentageGrade >= 96) return 4.0;
+        if (percentageGrade >= 90) return 3.5;
+        if (percentageGrade >= 84) return 3.0;
+        if (percentageGrade >= 78) return 2.5;
+        if (percentageGrade >= 72) return 2.0;
+        if (percentageGrade >= 66) return 1.5;
+        if (percentageGrade >= 60) return 1.0;
+        return 0.0;
+    }
+    
+    /**
+     * Apply consistent styling to E-Grade UI elements to ensure text visibility
+     */
+    private void ensureGradesTextVisibility() {
+        // Apply styling to labels
+        if (gradesSchoolYearLabel != null) {
+            gradesSchoolYearLabel.setStyle("-fx-font-size: 18; -fx-font-weight: bold; -fx-text-fill: #333333;");
+        }
+        
+        if (gpaLabel != null) {
+            gpaLabel.setStyle("-fx-text-fill: #333333;");
+        }
+        
+        // Apply styling to table
+        if (gradesTable != null) {
+            // Table styling
+            gradesTable.setStyle("-fx-text-fill: #333333; -fx-control-inner-background: white;");
+            
+            // Column styling
+            String columnStyle = "-fx-alignment: CENTER-LEFT; -fx-text-fill: #333333;";
+            if (gradeSubjectCodeCol != null) gradeSubjectCodeCol.setStyle(columnStyle);
+            if (gradeSubjectNameCol != null) gradeSubjectNameCol.setStyle(columnStyle);
+            if (gradeSubjectUnitsCol != null) gradeSubjectUnitsCol.setStyle(columnStyle);
+            
+            String gradeStyle = "-fx-alignment: CENTER; -fx-text-fill: #333333;";
+            if (midtermGradeCol != null) midtermGradeCol.setStyle(gradeStyle);
+            if (finalGradeCol != null) finalGradeCol.setStyle(gradeStyle);
+        }
+    }
+    
+    /**
+     * Handle print grade report button click
+     */
+    @FXML
+    public void handlePrintGradeReport() {
+        showAlert(Alert.AlertType.INFORMATION, "Print Function", 
+            "Print functionality will be implemented in a future update.");
+    }
+    
+    /**
+     * Handle export grade report button click
+     */
+    @FXML
+    public void handleExportGradeReport() {
+        showAlert(Alert.AlertType.INFORMATION, "Export Function", 
+            "Export to PDF functionality will be implemented in a future update.");
+    }
+
+    /**
+     * Handle refresh grades button click
+     */
+    @FXML
+    public void handleRefreshGrades() {
+        if (studentData == null || studentData.getStudentId() == null) {
+            showAlert(Alert.AlertType.ERROR, "Error", 
+                "No student data available to refresh grades.");
+            return;
+        }
+        
+        // Show loading indicator
+        showAlert(Alert.AlertType.INFORMATION, "Refreshing Data", "Loading your latest grade information...");
+        
+        // Call the method to refresh the grades
+        loadGrades();
     }
 }

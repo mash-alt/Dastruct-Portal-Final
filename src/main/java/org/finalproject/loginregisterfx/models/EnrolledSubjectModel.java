@@ -2,6 +2,7 @@ package org.finalproject.loginregisterfx.models;
 
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
+import org.finalproject.loginregisterfx.Service.SessionManager;
 
 /**
  * Model class representing an enrolled subject for display in the UI.
@@ -13,6 +14,8 @@ public class EnrolledSubjectModel {
     private final SimpleStringProperty schedule;
     private final SimpleStringProperty instructor;
     private final SimpleStringProperty subjectId; // Hidden field for reference
+    private final SimpleStringProperty midtermGrade; // Midterm grade as string for formatting
+    private final SimpleStringProperty finalGrade; // Final grade as string for formatting
     
     /**
      * Constructor for an enrolled subject
@@ -23,17 +26,26 @@ public class EnrolledSubjectModel {
      * @param schedule The class schedule
      * @param instructor The instructor name
      * @param subjectId The subject ID from the database
-     */
-    public EnrolledSubjectModel(String subjectCode, String subjectName, int units, 
-                               String schedule, String instructor, String subjectId) {
+     */    public EnrolledSubjectModel(String subjectCode, String subjectName, int units, 
+                               String schedule, String instructor, String subjectId,
+                               String midtermGrade, String finalGrade) {
         this.subjectCode = new SimpleStringProperty(subjectCode);
         this.subjectName = new SimpleStringProperty(subjectName);
         this.units = new SimpleIntegerProperty(units);
         this.schedule = new SimpleStringProperty(schedule);
         this.instructor = new SimpleStringProperty(instructor);
         this.subjectId = new SimpleStringProperty(subjectId);
+        this.midtermGrade = new SimpleStringProperty(midtermGrade);
+        this.finalGrade = new SimpleStringProperty(finalGrade);
     }
-      /**
+    
+    /**
+     * Constructor with default "N/A" grades
+     */
+    public EnrolledSubjectModel(String subjectCode, String subjectName, int units, 
+                               String schedule, String instructor, String subjectId) {
+        this(subjectCode, subjectName, units, schedule, instructor, subjectId, "N/A", "N/A");
+    }    /**
      * Constructor that takes a SubjectModel
      * 
      * @param subject The SubjectModel to convert
@@ -46,6 +58,37 @@ public class EnrolledSubjectModel {
         this.instructor = new SimpleStringProperty(subject.getTeacherAssigned() != null ? 
                                                 subject.getTeacherAssigned() : "TBA");
         this.subjectId = new SimpleStringProperty(subject.getEdpCode()); // Using edpCode as ID
+        
+        // Get grades if available for the current student
+        String midterm = "N/A";
+        String finals = "N/A";
+        
+        // If the subject has grades for this student, use them
+        if (SessionManager.getInstance().isAuthenticated() && 
+            SessionManager.getInstance().getCurrentStudent() != null) {
+            
+            StudentModel currentStudent = SessionManager.getInstance().getCurrentStudent();
+            
+            // First check if subject has direct grade information
+            if (subject.hasGrade(currentStudent)) {
+                Double midtermGrade = subject.getMidtermGrade(currentStudent);
+                Double finalGrade = subject.getFinalGrade(currentStudent);
+                
+                midterm = (midtermGrade != null) ? String.format("%.2f", midtermGrade) : "N/A";
+                finals = (finalGrade != null) ? String.format("%.2f", finalGrade) : "N/A";
+            } 
+            // If not, check in the academic history
+            else {
+                StudentModel.SubjectGrade grade = currentStudent.findSubjectGradeByEdpCode(subject.getEdpCode());
+                if (grade != null) {
+                    midterm = grade.getMidtermGradeFormatted();
+                    finals = grade.getFinalGradeFormatted();
+                }
+            }
+        }
+        
+        this.midtermGrade = new SimpleStringProperty(midterm);
+        this.finalGrade = new SimpleStringProperty(finals);
     }
     
     // Getters and setters for JavaFX properties
@@ -92,12 +135,27 @@ public class EnrolledSubjectModel {
     public SimpleStringProperty instructorProperty() {
         return instructor;
     }
-    
-    public String getSubjectId() {
+      public String getSubjectId() {
         return subjectId.get();
     }
     
     public SimpleStringProperty subjectIdProperty() {
         return subjectId;
+    }
+    
+    public String getMidtermGrade() {
+        return midtermGrade.get();
+    }
+    
+    public SimpleStringProperty midtermGradeProperty() {
+        return midtermGrade;
+    }
+    
+    public String getFinalGrade() {
+        return finalGrade.get();
+    }
+    
+    public SimpleStringProperty finalGradeProperty() {
+        return finalGrade;
     }
 }

@@ -91,10 +91,15 @@ public class LoginController {
                             if (response.has("user") && response.getAsJsonObject("user").has("name")) {
                                 name = response.getAsJsonObject("user").get("name").getAsString();
                             }
-                            
-                            // Store session data
+                              // Store session data
                             String token = response.has("token") ? response.get("token").getAsString() : "";
                             JsonObject userData = response.has("user") ? response.getAsJsonObject("user") : new JsonObject();
+                            
+                            // Save token in AuthService
+                            if (token != null && !token.isEmpty()) {
+                                System.out.println("Saving auth token for API access");
+                                AuthService.setAuthToken(token);
+                            }
                             
                             // Start session with authentication data
                             SessionManager.getInstance().startSession(token, userData, role.toLowerCase());

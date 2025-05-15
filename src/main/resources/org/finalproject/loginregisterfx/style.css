@@ -74,6 +74,35 @@
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 0);
 }
 
+/* Action Button Styles */
+.action-button {
+    -fx-background-color: #2c5364;
+    -fx-text-fill: white;
+    -fx-background-radius: 5;
+    -fx-padding: 8 15;
+    -fx-cursor: hand;
+    -fx-font-weight: bold;
+    -fx-font-size: 13px;
+    -fx-alignment: CENTER;
+    -fx-content-display: CENTER;
+}
+
+.action-button:hover {
+    -fx-background-color: #203a43;
+    -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 0);
+}
+
+/* Info Card Styles */
+.info-label {
+    -fx-font-weight: bold;
+    -fx-text-fill: white;
+}
+
+.info-value {
+    -fx-text-fill: #000000; /* Ensure black text color */
+    -fx-font-size: 14px;
+}
+
 /* Modern Table View */
 .modern-table-view {
     -fx-background-color: white;
@@ -549,6 +578,49 @@
 .button:hover {
     -fx-background-color: #516395 !important;
     -fx-effect: dropshadow(three-pass-box, rgba(0,0,0,0.2), 5, 0, 0, 0);
+}
+
+/* Card content text styles - ensures all text in cards is visible */
+.info-card .label {
+    -fx-text-fill: #333333;
+}
+
+/* Study load table specific styling */
+.enrolled-subjects-table {
+    -fx-background-color: white;
+    -fx-text-fill: #333333;
+    -fx-control-inner-background: white;
+    -fx-table-cell-border-color: #e0e0e0;
+    -fx-border-color: #e0e0e0;
+    -fx-border-width: 1px;
+    -fx-border-radius: 5px;
+}
+
+.enrolled-subjects-table .column-header {
+    -fx-background-color: #f8f9fa;
+    -fx-text-fill: #333333;
+    -fx-font-weight: bold;
+    -fx-padding: 5;
+    -fx-border-color: transparent transparent #e0e0e0 transparent;
+}
+
+.enrolled-subjects-table .column-header-background {
+    -fx-background-color: #f8f9fa;
+}
+
+.enrolled-subjects-table .table-cell {
+    -fx-text-fill: #333333;
+    -fx-alignment: center-left;
+    -fx-padding: 5;
+}
+
+.enrolled-subjects-table .table-row-cell {
+    -fx-text-fill: #333333;
+    -fx-background-color: white;
+}
+
+.enrolled-subjects-table .table-row-cell:odd {
+    -fx-background-color: #f8f9fa;
 }
 
 
