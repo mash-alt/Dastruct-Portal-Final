@@ -339,7 +339,7 @@
                                                         <children>
                                                             <Label text="Current GPA" styleClass="info-label">
                                                                 <font>
-                                                                    <Font name="System Bold" size="14.0" />
+                                                                    <Font name="System Bold" size="14.00" />
                                                                 </font>
                                                             </Label>
                                                             <Label fx:id="gpaValue" text="0.00" styleClass="gpa-value" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #2c5364;">
