@@ -506,142 +506,87 @@ public class StudentController {
                 if (fullNameValue != null) {
                     fullNameValue.setText(studentData.getName());
                     fullNameValue.setStyle("-fx-text-fill: #000000;");
-                    
-                    // Double-check that the text is visible
-                    System.out.println("Setting fullNameValue to: " + studentData.getName());
-                    System.out.println("fullNameValue style: " + fullNameValue.getStyle());
-                    System.out.println("fullNameValue parent background: " + 
-                                      (fullNameValue.getParent() != null ? 
-                                       fullNameValue.getParent().getStyle() : "null parent"));
-                } else {
-                    System.err.println("ERROR: fullNameValue label is null");
                 }
                 
                 if (studentIdValue != null) {
                     studentIdValue.setText(studentData.getStudentId());
                     studentIdValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting studentIdValue to: " + studentData.getStudentId());
-                } else {
-                    System.err.println("ERROR: studentIdValue label is null");
                 }
-                  if (emailValue != null) {
+                
+                if (emailValue != null) {
                     emailValue.setText(studentData.getEmail());
                     emailValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting emailValue to: " + studentData.getEmail());
-                } else {
-                    System.err.println("ERROR: emailValue label is null");
                 }
                 
-                // Set phone number
                 if (phoneNumberValue != null) {
                     phoneNumberValue.setText(studentData.getPhoneNumber());
                     phoneNumberValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting phoneNumberValue to: " + studentData.getPhoneNumber());
-                } else {
-                    System.err.println("ERROR: phoneNumberValue label is null");
                 }
                 
-                // Set address
                 if (addressValue != null) {
                     addressValue.setText(studentData.getAddress());
                     addressValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting addressValue to: " + studentData.getAddress());
-                } else {
-                    System.err.println("ERROR: addressValue label is null");
                 }
                 
-                // Set phone number
-                if (phoneNumberValue != null) {
-                    phoneNumberValue.setText(studentData.getPhoneNumber());
-                    phoneNumberValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting phoneNumberValue to: " + studentData.getPhoneNumber());
-                } else {
-                    System.err.println("ERROR: phoneNumberValue label is null");
-                }
-                
-                // Set address
-                if (addressValue != null) {
-                    addressValue.setText(studentData.getAddress());
-                    addressValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting addressValue to: " + studentData.getAddress());
-                } else {
-                    System.err.println("ERROR: addressValue label is null");
-                }
-                  if (courseValue != null) {
+                if (courseValue != null) {
                     courseValue.setText(studentData.getCourse());
                     courseValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting courseValue to: " + studentData.getCourse());
-                } else {
-                    System.err.println("ERROR: courseValue label is null");
                 }
-                  // Set semester
+                
                 if (semesterValue != null) {
-                    // Get semester directly from the student model
-                    String semester = studentData.getSemester();
-                    semesterValue.setText(semester);
+                    semesterValue.setText(studentData.getSemester());
                     semesterValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting semesterValue to: " + semester);
-                } else {
-                    System.err.println("ERROR: semesterValue label is null");
                 }
                 
                 if (yearLevelValue != null) {
                     yearLevelValue.setText(studentData.getYearLevelString());
                     yearLevelValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting yearLevelValue to: " + studentData.getYearLevelString());
-                } else {
-                    System.err.println("ERROR: yearLevelValue label is null");
                 }
                 
                 if (sectionValue != null) {
                     sectionValue.setText(studentData.getSection());
                     sectionValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting sectionValue to: " + studentData.getSection());
-                } else {
-                    System.err.println("ERROR: sectionValue label is null");
                 }
-                  // Update GPA and enrolled subjects
-                if (gpaValue != null) {
-                    gpaValue.setText(studentData.getFormattedGPA());
-                    // GPA already has a custom color in the FXML
-                    System.out.println("Setting gpaValue to: " + studentData.getFormattedGPA());
-                } else {
-                    System.err.println("ERROR: gpaValue label is null");
-                }                  // Count enrolled subjects - try all available sources and use the maximum count
-                int enrolledSubjectsCount = 0;
-                
-                // Check all possible sources and use the highest number found
-                // 1. Academic history (most reliable source)
+
+                // Calculate and update GPA from academic history
                 if (studentData.getCurrentAcademicTerm() != null && 
-                    studentData.getCurrentAcademicTerm().getSubjects() != null &&
-                    !studentData.getCurrentAcademicTerm().getSubjects().isEmpty()) {
-                    int historyCount = studentData.getCurrentAcademicTerm().getSubjects().size();
-                    enrolledSubjectsCount = Math.max(enrolledSubjectsCount, historyCount);
-                    System.out.println("Academic history subject count: " + historyCount);
-                }
-                
-                // 2. Check enrolled subject IDs
-                if (studentData.getEnrolledSubjectIds() != null && !studentData.getEnrolledSubjectIds().isEmpty()) {
-                    int idsCount = studentData.getEnrolledSubjectIds().size();
-                    enrolledSubjectsCount = Math.max(enrolledSubjectsCount, idsCount);
-                    System.out.println("Enrolled subject IDs count: " + idsCount);
-                }
-                
-                // 3. Check enrolled subjects objects
-                if (studentData.getEnrolledSubjects() != null && !studentData.getEnrolledSubjects().isEmpty()) {
-                    int subjectsCount = studentData.getEnrolledSubjects().size();
-                    enrolledSubjectsCount = Math.max(enrolledSubjectsCount, subjectsCount);
-                    System.out.println("Enrolled subjects objects count: " + subjectsCount);
-                }
-                
-                System.out.println("Final subjects count determined: " + enrolledSubjectsCount);
-                
-                if (subjectsEnrolledValue != null) {
-                    subjectsEnrolledValue.setText(String.valueOf(enrolledSubjectsCount));
-                    subjectsEnrolledValue.setStyle("-fx-text-fill: #000000;");
-                    System.out.println("Setting subjectsEnrolledValue to: " + enrolledSubjectsCount);
+                    studentData.getCurrentAcademicTerm().getSubjects() != null) {
+                    
+                    ObservableList<EnrolledSubjectModel> gradesData = FXCollections.observableArrayList();
+                    
+                    // Convert academic history subjects to EnrolledSubjectModel
+                    for (StudentModel.SubjectGrade subjectGrade : studentData.getCurrentAcademicTerm().getSubjects()) {
+                        gradesData.add(new EnrolledSubjectModel(
+                            subjectGrade.getEdpCode(),
+                            subjectGrade.getSubjectName(),
+                            subjectGrade.getUnits(),
+                            "TBA",
+                            "TBA",
+                            subjectGrade.getSubjectId(),
+                            subjectGrade.getMidtermGradeFormatted(),
+                            subjectGrade.getFinalGradeFormatted()
+                        ));
+                    }
+                    
+                    // Calculate GPA using the existing method
+                    calculateGPA(gradesData);
                 } else {
-                    System.err.println("ERROR: subjectsEnrolledValue label is null");
+                    // If no academic history, set GPA to 0.00
+                    if (gpaValue != null) {
+                        gpaValue.setText("0.00");
+                        gpaValue.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #2c5364;");
+                    }
+                    if (gpaLabel != null) {
+                        gpaLabel.setText("0.00");
+                    }
+                }
+                
+                // Update enrolled subjects count
+                if (subjectsEnrolledValue != null) {
+                    int enrolledCount = studentData.getCurrentAcademicTerm() != null ? 
+                        studentData.getCurrentAcademicTerm().getSubjects().size() : 0;
+                    subjectsEnrolledValue.setText(String.valueOf(enrolledCount));
+                    subjectsEnrolledValue.setStyle("-fx-text-fill: #000000;");
                 }
                 
                 // Also update enrollment status since it's related to student info
