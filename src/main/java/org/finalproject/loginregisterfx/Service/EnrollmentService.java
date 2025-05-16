@@ -46,12 +46,6 @@ public class EnrollmentService {    // Use the same base URL and methods from Au
         // The endpoint based on the backend route structure
         String endpoint = "/student/enroll";
         
-        // Ensure the student ID has the correct format (should start with ucb-)
-        if (studentId != null && !studentId.startsWith("ucb-")) {
-            studentId = "ucb-" + studentId;
-            System.out.println("Added ucb- prefix to student ID: " + studentId);
-        }
-        
         // Create the request body with required fields based on backend implementation
         Map<String, Object> requestData = new HashMap<>();
         // This is critical - the studentId must be included in the request body
