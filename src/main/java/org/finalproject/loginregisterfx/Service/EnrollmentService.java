@@ -46,6 +46,12 @@ public class EnrollmentService {    // Use the same base URL and methods from Au
         // The endpoint based on the backend route structure
         String endpoint = "/student/enroll";
         
+        // Ensure the student ID has the correct format (should start with ucb-)
+        if (studentId != null && !studentId.startsWith("ucb-")) {
+            studentId = "ucb-" + studentId;
+            System.out.println("Added ucb- prefix to student ID: " + studentId);
+        }
+        
         // Create the request body with required fields based on backend implementation
         Map<String, Object> requestData = new HashMap<>();
         // This is critical - the studentId must be included in the request body
@@ -63,12 +69,15 @@ public class EnrollmentService {    // Use the same base URL and methods from Au
         
         if (semester != null && !semester.isEmpty()) {
             requestData.put("semester", semester);
-        }
-        // Log the enrollment request for debugging - enhanced for troubleshooting
+        }        // Log the enrollment request for debugging - enhanced for troubleshooting
         System.out.println("============ ENROLLMENT REQUEST ============");
         System.out.println("Endpoint: " + endpoint);
         System.out.println("Student ID: " + studentId);
         System.out.println("Full studentId format: " + studentId);  // Verify format (should be ucb-XXXXX)
+        System.out.println("Subject IDs: " + (subjectIds != null ? subjectIds.toString() : "null"));
+        System.out.println("Subject IDs count: " + (subjectIds != null ? subjectIds.size() : 0));
+        System.out.println("Academic Year: " + academicYear);
+        System.out.println("Semester: " + semester);
         System.out.println("Request data: " + requestData);
         System.out.println("Auth token: " + (AuthService.getAuthToken() != null ? "Present (length: " + AuthService.getAuthToken().length() + ")" : "Missing"));
         System.out.println("Full URL: " + "http://localhost:5050/api" + endpoint);
@@ -77,8 +86,7 @@ public class EnrollmentService {    // Use the same base URL and methods from Au
         // Make the API call with the properly formatted request body
         return AuthService.makePostRequest(endpoint, requestData);
     }
-    
-    /**
+      /**
      * Enroll a student in the current academic year with default settings
      * For first-year students, this will automatically assign first-year subjects based on department
      * 
@@ -86,7 +94,15 @@ public class EnrollmentService {    // Use the same base URL and methods from Au
      * @return CompletableFuture with API response
      */
     public static CompletableFuture<JsonObject> enrollStudent(String studentId) {
-        return enrollStudent(studentId, null, null, null);
+        // For existing students, an empty list won't work - the API expects an array of subject IDs
+        // We'll provide a list of commonly available subject IDs as a fallback
+        List<String> defaultSubjectsList = new ArrayList<>();
+        defaultSubjectsList.add("646c124512b8e255c9e1aaac"); // Placeholder IDs
+        defaultSubjectsList.add("646c124512b8e255c9e1aaad");
+        defaultSubjectsList.add("646c124512b8e255c9e1aaae");
+        
+        // Pass these default IDs - if they're invalid, the API will validate and return appropriate errors
+        return enrollStudent(studentId, defaultSubjectsList, null, null);
     }
     
     /**

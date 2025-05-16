@@ -410,7 +410,7 @@ public class TeacherController {
             scene.getStylesheets().add(getClass().getResource("style.css").toExternalForm());
             
             // Set stage properties
-            stage.setResizable(true);
+            stage.setResizable(false);
             stage.setMinWidth(600);
             stage.setMinHeight(450);
             

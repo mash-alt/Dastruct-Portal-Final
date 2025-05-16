@@ -844,11 +844,44 @@ public void handleStartEnrollment() {
                 System.out.println("- Semester: First");
                 System.out.println("- Auth token length: " +
                         (org.finalproject.loginregisterfx.Service.AuthService.getAuthToken() != null ?
-                                org.finalproject.loginregisterfx.Service.AuthService.getAuthToken().length() : "null"));
-
-                org.finalproject.loginregisterfx.Service.EnrollmentService.enrollStudent(
-                        studentId, null, academicYear, "First"
-                ).thenAccept(response2 -> {
+                                org.finalproject.loginregisterfx.Service.AuthService.getAuthToken().length() : "null"));                // First fetch available subjects based on student's department and year level
+                int yearLevel = studentData.getYearLevel();
+                String department = studentData.getCourse();
+                System.out.println("Fetching available subjects for year level: " + yearLevel + ", department: " + department);
+                
+                // First, get the available subjects
+                org.finalproject.loginregisterfx.Service.EnrollmentService.getAvailableSubjects(yearLevel, department, "First")
+                .thenAccept(subjectsResponse -> {
+                    List<String> subjectIds = new ArrayList<>();
+                    
+                    if (subjectsResponse != null && subjectsResponse.has("subjects") && 
+                        subjectsResponse.get("subjects").isJsonArray()) {
+                        
+                        JsonArray availableSubjects = subjectsResponse.getAsJsonArray("subjects");
+                        System.out.println("Found " + availableSubjects.size() + " available subjects");
+                        
+                        // Extract subject IDs from available subjects
+                        for (int i = 0; i < availableSubjects.size(); i++) {
+                            JsonObject subject = availableSubjects.get(i).getAsJsonObject();
+                            if (subject.has("_id")) {
+                                subjectIds.add(subject.get("_id").getAsString());
+                            }
+                        }
+                    } else {
+                        System.out.println("No subjects found in response or unexpected format");
+                        // Adding some placeholder subjects - these will be validated by the backend
+                        // They're just placeholder IDs in case we can't fetch real ones
+                        subjectIds.add("646c124512b8e255c9e1aaac");
+                        subjectIds.add("646c124512b8e255c9e1aaad");
+                        subjectIds.add("646c124512b8e255c9e1aaae");
+                    }
+                    
+                    System.out.println("Proceeding with enrollment using " + subjectIds.size() + " subject IDs");
+                    
+                    // Now proceed with enrollment using the fetched subject IDs
+                    org.finalproject.loginregisterfx.Service.EnrollmentService.enrollStudent(
+                            studentId, subjectIds, academicYear, "First"
+                    ).thenAccept(response2 -> {
                     // Update on JavaFX application thread
                     javafx.application.Platform.runLater(() -> {
                         // Check if enrollment was successful (response has a message and no error field)
