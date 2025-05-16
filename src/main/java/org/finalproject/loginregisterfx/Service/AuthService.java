@@ -9,7 +9,11 @@ import java.util.HashMap;
 import java.util.concurrent.CompletableFuture;
 
 public class AuthService {    
+<<<<<<< HEAD
     private static final String BASE_URL = "https://sturdy-space-pancake-v6wj54rgr57726xjr-5050.app.github.dev/api"; 
+=======
+    private static final String BASE_URL = "https://sturdy-space-pancake-v6wj54rgr57726xjr-5050.app.github.dev/api";
+>>>>>>> b7117d9566831e9089822f41ffc5665de95681f2
     // Change to your actual API URL
     //private static final String BASE_URL = "http://localhost:5050/api";  // Removed /api suffix since endpoints already include it
     private static final MediaType JSON = MediaType.parse("application/json; charset=utf-8");
