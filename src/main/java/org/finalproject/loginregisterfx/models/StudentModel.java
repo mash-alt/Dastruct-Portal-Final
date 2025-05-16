@@ -99,6 +99,7 @@ public class StudentModel {
     // Fields for displaying grades in the UI
     private String midtermGrade;
     private String finalGrade;
+    private double gpa;
     
     /**
      * Set midterm grade 
@@ -486,5 +487,13 @@ public class StudentModel {
       @Override
     public String toString() {
         return name + " (" + course + " - Year " + yearLevel + ", " + semester + " Semester)";
+    }
+
+    public double getGPA() {
+        return gpa;
+    }
+
+    public void setGPA(double gpa) {
+        this.gpa = gpa;
     }
 }

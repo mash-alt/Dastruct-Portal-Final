@@ -335,14 +335,16 @@
                                             <HBox alignment="CENTER_LEFT" spacing="30.0">
                                                 <children>
                                                     <!-- GPA Value -->
-                                                    <VBox alignment="CENTER" spacing="5.0" prefWidth="150.0" style="-fx-background-color: #f8f9fa; -fx-background-radius: 10;">
+                                                    <VBox alignment="CENTER" spacing="5.0" prefWidth="200.0" style="-fx-background-color: #f8f9fa; -fx-background-radius: 10;">
                                                         <children>
                                                             <Label text="Current GPA" styleClass="info-label">
                                                                 <font>
                                                                     <Font name="System Bold" size="14.0" />
                                                                 </font>
                                                             </Label>
-                                                            <Label fx:id="gpaValue" text="0.00" styleClass="gpa-value" style="-fx-font-size: 32px; -fx-font-weight: bold; -fx-text-fill: #2c5364;">
+                                                            <Label fx:id="gpaValue" text="0.00" styleClass="gpa-value" style="-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #2c5364;">
+                                                            </Label>
+                                                            <Label text="Average of Final Grades" style="-fx-font-size: 12px; -fx-text-fill: #666666;">
                                                             </Label>
                                                         </children>
                                                         <padding>
