@@ -1755,52 +1755,88 @@ private void showEnrollmentSuccessDialog() {
     private void calculateGPA(ObservableList<EnrolledSubjectModel> gradesData) {
         if (gradesData.isEmpty() || gpaLabel == null) {
             if (gpaLabel != null) gpaLabel.setText("0.00");
+            if (gpaValue != null) gpaValue.setText("0.00");
             return;
         }
-        
-        double totalPoints = 0;
-        int totalUnits = 0;
-        
+
+        System.out.println("\n=== GPA Calculation Details ===");
+        System.out.println("Student: " + (studentData != null ? studentData.getName() : "Unknown"));
+        System.out.println("Total subjects: " + gradesData.size());
+
+        double totalGrades = 0;
+        int validGrades = 0;
+
+        System.out.println("\nSubject-wise GPA Calculation:");
+        System.out.println("----------------------------------------");
+        System.out.printf("%-30s %-8s %-8s%n", 
+            "Subject", "Grade", "Running Total");
+        System.out.println("----------------------------------------");
+
         for (EnrolledSubjectModel subject : gradesData) {
-            int units = subject.getUnits();
-            totalUnits += units;
+            String finalGradeStr = subject.getFinalGrade();
             
-            // Convert final grade string to double for calculation
-            try {
-                if (!subject.getFinalGrade().equals("N/A")) {
-                    double grade = Double.parseDouble(subject.getFinalGrade());
-                    // Convert to 4.0 scale
-                    double points = convertToGPAScale(grade);
-                    totalPoints += (points * units);
+            if (finalGradeStr != null && !finalGradeStr.equals("N/A")) {
+                try {
+                    String cleanGrade = finalGradeStr.trim().replaceAll("[^0-9.]", "");
+                    
+                    if (!cleanGrade.isEmpty()) {
+                        double grade = Double.parseDouble(cleanGrade);
+                        totalGrades += grade;
+                        validGrades++;
+                        
+                        System.out.printf("%-30s %-8.2f %-8.2f%n",
+                            subject.getSubjectName(),
+                            grade,
+                            totalGrades);
+                    }
+                } catch (NumberFormatException e) {
+                    System.out.printf("%-30s %-8s %-8s%n",
+                        subject.getSubjectName(),
+                        "N/A",
+                        "N/A");
                 }
-            } catch (NumberFormatException e) {
-                // Skip this subject if grade is not a valid number
-                System.out.println("Could not parse grade for " + subject.getSubjectName() + ": " + subject.getFinalGrade());
+            } else {
+                System.out.printf("%-30s %-8s %-8s%n",
+                    subject.getSubjectName(),
+                    "N/A",
+                    "N/A");
+            }
+        }
+
+        System.out.println("----------------------------------------");
+        double gpa = (validGrades > 0) ? (totalGrades / validGrades) : 0.0;
+        System.out.printf("Total Grades: %.2f%n", totalGrades);
+        System.out.printf("Number of Subjects: %d%n", validGrades);
+        System.out.printf("Final GPA: %.2f%n", gpa);
+        System.out.println("========================================\n");
+        
+        // Format GPA to 2 decimal places
+        String formattedGPA = String.format("%.2f", gpa);
+        
+        // Update both GPA labels
+        if (gpaLabel != null) {
+            gpaLabel.setText(formattedGPA);
+        }
+        
+        if (gpaValue != null) {
+            gpaValue.setText(formattedGPA);
+            
+            // Update color based on GPA value
+            if (gpa >= 1.0 && gpa <= 1.5) {
+                gpaValue.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #27ae60;"); // Green for excellent
+            } else if (gpa > 1.5 && gpa <= 2.0) {
+                gpaValue.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #2c5364;"); // Blue for good
+            } else if (gpa > 2.0 && gpa <= 3.0) {
+                gpaValue.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #f39c12;"); // Orange for fair
+            } else {
+                gpaValue.setStyle("-fx-font-size: 36px; -fx-font-weight: bold; -fx-text-fill: #e74c3c;"); // Red for poor
             }
         }
         
-        double gpa = (totalUnits > 0) ? (totalPoints / totalUnits) : 0.0;
-        gpaLabel.setText(String.format("%.2f", gpa));
-        
-        // Also update the GPA value in the profile section if available
-        if (gpaValue != null) {
-            gpaValue.setText(String.format("%.2f", gpa));
+        // Update student model with new GPA
+        if (studentData != null) {
+            studentData.setGPA(gpa);
         }
-    }
-    
-    /**
-     * Convert percentage grade to 4.0 scale
-     */
-    private double convertToGPAScale(double percentageGrade) {
-        // Simple conversion - can be adjusted based on institution's grading scale
-        if (percentageGrade >= 96) return 4.0;
-        if (percentageGrade >= 90) return 3.5;
-        if (percentageGrade >= 84) return 3.0;
-        if (percentageGrade >= 78) return 2.5;
-        if (percentageGrade >= 72) return 2.0;
-        if (percentageGrade >= 66) return 1.5;
-        if (percentageGrade >= 60) return 1.0;
-        return 0.0;
     }
     
     /**
