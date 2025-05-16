@@ -49,9 +49,6 @@ public class StudentController {
     private Button eGradeBtn;
       @FXML
     private Button logoutBtn;
-    
-    @FXML
-    private Button refreshProfileBtn;
       @FXML
     private Button refreshStudyLoadBtn;
     
@@ -322,14 +319,9 @@ public class StudentController {
         java.time.LocalDate now = java.time.LocalDate.now();
         int currentYear = now.getYear();
         System.out.println("Current academic year: " + currentYear + "-" + (currentYear + 1));
-        
-        // Set current academic year in enrollment view if the label exists
+          // Set current academic year in enrollment view if the label exists
         if (schoolYearLabel != null) {
             schoolYearLabel.setText("School Year " + currentYear + "-" + (currentYear + 1));
-        }
-          // If we have a refresh profile button, set its styling
-        if (refreshProfileBtn != null) {
-            refreshProfileBtn.getStyleClass().add("export-button");
         }
         
         // If we have a refresh study load button, set its styling
@@ -477,74 +469,7 @@ public class StudentController {
             System.err.println("ERROR initializing student data: " + e.getMessage());
             e.printStackTrace();
         }
-    }
-      /**
-     * Refresh student profile data from API
-     */    @FXML
-    public void refreshStudentProfile() {
-        if (studentData == null || studentData.getStudentId() == null) {
-            System.err.println("ERROR: Cannot refresh profile - student data or ID is null");
-            showAlert(Alert.AlertType.ERROR, "Error", "Could not refresh student profile data");
-            return;
-        }
-        
-        // Show loading indicator
-        String studentId = studentData.getStudentId();
-        System.out.println("Refreshing profile data for student ID: " + studentId);
-        
-        // Ensure the student ID has the proper format for the API
-        if (studentId != null && !studentId.startsWith("ucb-")) {
-            studentId = "ucb-" + studentId;
-            System.out.println("Added ucb- prefix to student ID for API call: " + studentId);
-        }
-        
-        // Call API to get latest student data
-        final String finalStudentId = studentId;
-        AuthService.getStudentProfile(finalStudentId)
-            .thenAccept(response -> {
-                Platform.runLater(() -> {
-                    System.out.println("Profile refresh response received: " + response);
-                    // The response structure might be the student object directly, or nested under 'student'
-                    JsonObject studentJson = null;
-                    
-                    if (response != null) {
-                        if (response.has("student")) {
-                            studentJson = response.getAsJsonObject("student");
-                        } else {
-                            // If the student data is at the root level
-                            studentJson = response;
-                        }
-                        
-                        if (studentJson != null) {
-                            // Update student model with fresh data
-                            studentData = new StudentModel(studentJson);
-                            
-                            // Save updated data in session
-                            SessionManager.getInstance().updateStudentData(studentJson);
-                            
-                            // Update UI with refreshed data
-                            updateStudentInfo();
-                            
-                            showAlert(Alert.AlertType.INFORMATION, "Success", "Profile data refreshed successfully");
-                            return;
-                        }
-                    }
-                    
-                    // If we reach here, something went wrong
-                    System.err.println("ERROR: Invalid response format when refreshing profile");
-                    showAlert(Alert.AlertType.ERROR, "Error", "Could not refresh student profile data");
-                });
-            })
-            .exceptionally(ex -> {
-                Platform.runLater(() -> {
-                    System.err.println("ERROR refreshing profile: " + ex.getMessage());
-                    showAlert(Alert.AlertType.ERROR, "Error", "Failed to connect to server. Please check if the server is running and try again.");
-                });
-                return null;
-            });
-    }
-
-    /**
+    }    /**
      * Update UI with student information
      */
     private void updateStudentInfo() {
@@ -941,13 +866,11 @@ public void handleStartEnrollment() {
 
                                 // Print received student data for debugging
                                 System.out.println("Received student data from successful enrollment response: " + studentObj.toString());
-                            }
-
-                            // Update session manager
+                            }                            // Update session manager
                             org.finalproject.loginregisterfx.Service.SessionManager.getInstance().updateEnrollmentStatus(true);
 
-                            // Refresh student data from the server to get enrolled subjects
-                            refreshStudentProfile();
+                            // Instead of refreshing, directly update UI with current data
+                            updateStudentInfo();
 
                             // Update UI to reflect enrollment status
                             updateEnrollmentStatus();
@@ -1526,42 +1449,96 @@ private void showEnrollmentSuccessDialog() {
         // Show loading indicator
         showAlert(Alert.AlertType.INFORMATION, "Refreshing Data", "Loading your latest study load information...");
         
-        // Refresh from API first to get latest data, then reload the UI
+        // Get the student ID for API calls
         String studentId = studentData.getStudentId();
         System.out.println("Refreshing study load data for student ID: " + studentId);
         
         // First refresh student profile data to potentially update academic history
         AuthService.getStudentProfile(studentId)
             .thenAccept(response -> {
-                Platform.runLater(() -> {
-                    if (response != null) {
-                        System.out.println("Updated student profile data received");
-                        
-                        // Extract student data
-                        JsonObject studentJson = null;
-                        if (response.has("student")) {
-                            studentJson = response.getAsJsonObject("student");
-                        } else {
-                            // If the student data is at the root level
-                            studentJson = response;
-                        }
-                        
-                        if (studentJson != null) {
-                            // Update student model with fresh data
-                            studentData = new StudentModel(studentJson);
-                            SessionManager.getInstance().updateStudentData(studentJson);
-                        }
+                if (response != null) {
+                    System.out.println("Updated student profile data received");
+                    
+                    // Extract student data
+                    JsonObject studentJson = null;
+                    if (response.has("student")) {
+                        studentJson = response.getAsJsonObject("student");
+                    } else {
+                        // If the student data is at the root level
+                        studentJson = response;
                     }
                     
-                    // Now load enrolled subjects (will use academic history if available)
-                    loadEnrolledSubjects();
-                });
+                    if (studentJson != null) {
+                        // Update student model with fresh data
+                        final JsonObject finalStudentJson = studentJson;
+                        Platform.runLater(() -> {
+                            studentData = new StudentModel(finalStudentJson);
+                            SessionManager.getInstance().updateStudentData(finalStudentJson);
+                            
+                            // Now directly fetch enrolled subjects using the EnrollmentService API
+                            // The API will give us the latest data regardless of what's in the student model
+                            EnrollmentService.getEnrolledSubjects(studentId)
+                                .thenAccept(studyLoadResponse -> {
+                                    Platform.runLater(() -> {
+                                        try {
+                                            System.out.println("Received fresh study load data from API");
+                                            
+                                            if (studyLoadResponse != null) {
+                                                // Check if we got data in the various possible formats
+                                                if (studyLoadResponse.has("studyLoad") && studyLoadResponse.get("studyLoad").isJsonArray()) {
+                                                    processEnrolledSubjects(studyLoadResponse.getAsJsonArray("studyLoad"));
+                                                } 
+                                                else if (studyLoadResponse.has("data") && 
+                                                        studyLoadResponse.get("data").isJsonObject() && 
+                                                        studyLoadResponse.getAsJsonObject("data").has("studyLoad") && 
+                                                        studyLoadResponse.getAsJsonObject("data").get("studyLoad").isJsonArray()) {
+                                                    processEnrolledSubjects(studyLoadResponse.getAsJsonObject("data").getAsJsonArray("studyLoad"));
+                                                }
+                                                else if (studyLoadResponse.has("message") && studyLoadResponse.has("studyLoad") && 
+                                                        studyLoadResponse.get("studyLoad").isJsonArray()) {
+                                                    processEnrolledSubjects(studyLoadResponse.getAsJsonArray("studyLoad"));
+                                                }
+                                                else {
+                                                    // If no study load data found, show a message
+                                                    showAlert(Alert.AlertType.INFORMATION, "No Data", 
+                                                        "No enrolled subjects found. Please check your enrollment status.");
+                                                }
+                                            } else {
+                                                showAlert(Alert.AlertType.WARNING, "No Data", 
+                                                    "Could not retrieve study load information.");
+                                            }
+                                        } catch (Exception e) {
+                                            e.printStackTrace();
+                                            showAlert(Alert.AlertType.ERROR, "Error", 
+                                                "Could not process study load data: " + e.getMessage());
+                                        }
+                                    });
+                                })
+                                .exceptionally(ex -> {
+                                    Platform.runLater(() -> {
+                                        showAlert(Alert.AlertType.ERROR, "Network Error", 
+                                            "Failed to connect to server. Please check your internet connection and try again: " + ex.getMessage());
+                                    });
+                                    return null;
+                                });
+                        });
+                    } else {
+                        Platform.runLater(() -> {
+                            showAlert(Alert.AlertType.WARNING, "Data Error", 
+                                "Could not extract student data from response.");
+                        });
+                    }
+                } else {
+                    Platform.runLater(() -> {
+                        showAlert(Alert.AlertType.WARNING, "No Data", 
+                            "No profile data received from server.");
+                    });
+                }
             })
             .exceptionally(ex -> {
                 Platform.runLater(() -> {
-                    System.err.println("Error refreshing profile: " + ex.getMessage());
-                    // Fall back to just loading enrolled subjects directly
-                    loadEnrolledSubjects();
+                    showAlert(Alert.AlertType.ERROR, "Network Error", 
+                        "Failed to connect to server. Please check your internet connection and try again: " + ex.getMessage());
                 });
                 return null;
             });

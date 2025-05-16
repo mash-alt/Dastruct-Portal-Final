@@ -155,7 +155,7 @@
                         <!-- Refresh Button -->
                         <Button fx:id="refreshButton" mnemonicParsing="false" styleClass="action-button" text="Refresh">
                             <HBox.margin>
-                                <Insets left="10.0" />
+                                <Insets left="-10.0" />
                             </HBox.margin>
                         </Button>
                     </children>

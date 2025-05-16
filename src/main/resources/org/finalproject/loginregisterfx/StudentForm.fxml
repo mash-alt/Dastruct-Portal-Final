@@ -133,18 +133,11 @@
                 <VBox fx:id="profileContent" spacing="20.0" visible="true" VBox.vgrow="ALWAYS">
                     <children>                        <!-- Header with Refresh Button -->
                         <HBox alignment="CENTER_LEFT" spacing="20.0">
-                            <children>
-                                <Label text="Student Profile" styleClass="section-header">
+                            <children>                                <Label text="Student Profile" styleClass="section-header">
                                     <font>
                                         <Font name="System Bold" size="24.0" />
                                     </font>
                                 </Label>
-                                
-                                <!-- Refresh Button -->                                <Button fx:id="refreshProfileBtn" mnemonicParsing="false" onAction="#refreshStudentProfile" styleClass="export-button" text="Refresh Profile">
-                                    <font>
-                                        <Font size="14.0" />
-                                    </font>
-                                </Button>
                             </children>
                             <padding>
                                 <Insets bottom="10.0" />

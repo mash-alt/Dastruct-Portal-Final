@@ -43,12 +43,79 @@ public class AuthService {
         String endpoint = String.format("/auth/%s/login", role.toLowerCase());
 
         return makePostRequest(endpoint, credentials);
-    }
-    
-    public static CompletableFuture<JsonObject> register(Map<String, Object> userData, String role) {
+    }    public static CompletableFuture<JsonObject> register(Map<String, Object> userData, String role) {
         String endpoint = String.format("/auth/%s/signup", role.toLowerCase());
+        
+        // Create a CompletableFuture to return
+        CompletableFuture<JsonObject> future = new CompletableFuture<>();
 
-        return makePostRequest(endpoint, userData);    }
+        try {
+            String jsonBody = gson.toJson(userData);
+            RequestBody body = RequestBody.create(jsonBody, JSON);
+
+            // Build the request with custom headers specifically for registration
+            Request.Builder requestBuilder = new Request.Builder()
+                    .url(BASE_URL + endpoint)
+                    .post(body)
+                    .addHeader("Content-Type", "application/json")
+                    // You may need to add a specific authorization header for registration
+                    .addHeader("x-api-key", "registration-api-key"); // Replace with your actual API key if needed
+
+            client.newCall(requestBuilder.build()).enqueue(new Callback() {
+                @Override
+                public void onFailure(Call call, IOException e) {
+                    System.err.println("API request failed: " + endpoint + " - Error: " + e.getMessage());
+                    future.completeExceptionally(e);
+                }
+
+                @Override
+                public void onResponse(Call call, Response response) throws IOException {
+                    String responseBody = response.body().string();
+                    System.out.println("API response received for: " + endpoint);
+                    System.out.println("Status code: " + response.code());
+                    System.out.println("Response body: " + responseBody);
+                    System.out.println("Request URL: " + call.request().url());
+                    System.out.println("Request headers: ");
+                    call.request().headers().names().forEach(name -> {
+                        System.out.println("  " + name + ": " + call.request().header(name));
+                    });
+                    System.out.println("Request body: " + jsonBody);
+                    
+                    if (response.isSuccessful()) {
+                        JsonObject jsonResponse = gson.fromJson(responseBody, JsonObject.class);
+
+                        // Save token if it exists in the response
+                        if (jsonResponse.has("token")) {
+                            authToken = jsonResponse.get("token").getAsString();
+                            System.out.println("Auth token updated from response");
+                        }
+
+                        future.complete(jsonResponse);
+                    } else {
+                        // Try to parse error response as JSON first
+                        try {
+                            JsonObject errorResponse = gson.fromJson(responseBody, JsonObject.class);
+                            // If the response has an error field, use it as the message
+                            if (errorResponse.has("error")) {
+                                future.completeExceptionally(new IOException("Request failed: " + errorResponse.get("error").getAsString()));
+                            } else {
+                                // Otherwise use the whole response body
+                                future.completeExceptionally(new IOException("Request failed: " + responseBody));
+                            }
+                        } catch (Exception e) {
+                            // If we can't parse as JSON, use the raw response
+                            future.completeExceptionally(new IOException("Request failed: " + responseBody));
+                        }
+                    }
+                }
+            });
+        } catch (Exception e) {
+            System.err.println("Error setting up API request: " + e.getMessage());
+            future.completeExceptionally(e);
+        }
+
+        return future;
+    }
     
     /**
      * Get the current user's profile (authenticated user)
@@ -69,7 +136,7 @@ public class AuthService {
     public static CompletableFuture<JsonObject> getStudentProfile(String studentId) {
         System.out.println("Fetching profile data for student ID: " + studentId);
         // If studentId is provided, use /profile/:studentId endpoint, otherwise use /profile
-        String url = (studentId != null && !studentId.isEmpty()) ? "/profile/" + studentId : "/profile";
+        String url = "/profile";
         System.out.println("Full URL: " + BASE_URL + url);
         return makeGetRequest(url);
     }
@@ -96,12 +163,11 @@ public class AuthService {
 
         try {
             String jsonBody = requestBody != null ? gson.toJson(requestBody) : "";
-            RequestBody body = RequestBody.create(jsonBody, JSON);
-
-            Request.Builder requestBuilder = new Request.Builder()
+            RequestBody body = RequestBody.create(jsonBody, JSON);            Request.Builder requestBuilder = new Request.Builder()
                     .url(BASE_URL + endpoint)
                     .post(body);
 
+            // Include bearer token if available
             if (authToken != null && !authToken.isEmpty()) {
                 requestBuilder.addHeader("Authorization", "Bearer " + authToken);
             }
