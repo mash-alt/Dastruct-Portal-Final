@@ -117,8 +117,8 @@ public class LoginController {
                                 Stage currentStage = (Stage) loginButton.getScene().getWindow();
                                 currentStage.setScene(new Scene(dashboardView, 1000, 700));
                                 currentStage.setTitle("Admin Dashboard");
-                                currentStage.setResizable(true);
-                                currentStage.setMaximized(true);
+                                currentStage.setResizable(false);
+                                //currentStage.setMaximized(true);
                                 currentStage.show();
                                 currentStage.centerOnScreen();
                             } catch (Exception e) {
@@ -161,11 +161,12 @@ public class LoginController {
                                 // }
 
                                 Stage currentStage = (Stage) loginButton.getScene().getWindow();
-                                currentStage.setScene(new Scene(teacherView, 930, 700));
+                                currentStage.setScene(new Scene(teacherView, 1000, 700));
                                 currentStage.setTitle("Teacher Portal");
                                 currentStage.setResizable(true);
                                 currentStage.show();
                                 currentStage.centerOnScreen();
+                                currentStage.setResizable(false);
                             } catch (Exception e) {
                                 showAlert(Alert.AlertType.ERROR, "Navigation Error", "Could not open teacher dashboard.");
                                 e.printStackTrace();
